@@ -3,7 +3,7 @@ import numpy as np
 import random
 import torch
 
-# @torch.jit.script  # Disabled for RTX 4090 compatibility
+@torch.jit.script
 def copysign(a, b):
     # type: (float, Tensor) -> Tensor
     a = torch.tensor(a, device=b.device, dtype=torch.float).repeat(b.shape[0])
