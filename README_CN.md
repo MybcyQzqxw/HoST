@@ -16,15 +16,25 @@
 </p>
 
 ## 📑 目录
-- [🔥 新闻](#-新闻)
-- [📝 待办事项](#-待办事项)
-- [🛠️ 安装说明](#-安装说明)
-- [🤖 在Unitree G1上运行HoST](#-在unitree-g1上运行host)
-- [🧭 将HoST扩展到其他人形机器人](#-将host扩展到其他人形机器人建议)
-- [✉️ 联系方式](#-联系方式)
-- [🏷️ 许可证](#-许可证)
-- [🎉 致谢](#-致谢)
-- [📝 引用](#-引用)
+- [HoST: 人形机器人站立控制](#host-人形机器人站立控制)
+  - [📑 目录](#-目录)
+  - [🔥 新闻](#-新闻)
+  - [📝 待办事项](#-待办事项)
+  - [🛠️ 安装说明](#️-安装说明)
+    - [错误处理](#错误处理)
+  - [🤖 在Unitree G1上运行HoST](#-在unitree-g1上运行host)
+    - [主要仿真动作概览](#主要仿真动作概览)
+    - [策略训练](#策略训练)
+    - [策略评估](#策略评估)
+    - [运动可视化](#运动可视化)
+    - [从俯卧姿势开始训练](#从俯卧姿势开始训练)
+  - [🧭 将HoST扩展到其他人形机器人：建议](#-将host扩展到其他人形机器人建议)
+    - [从Unitree H1和H1-2中学到的经验](#从unitree-h1和h1-2中学到的经验)
+    - [硬件部署的潜在建议](#硬件部署的潜在建议)
+  - [✉️ 联系方式](#️-联系方式)
+  - [🏷️ 许可证](#️-许可证)
+  - [🎉 致谢](#-致谢)
+  - [📝 引用](#-引用)
 
 ## 🔥 新闻
 - \[2025-06\] HoST入选RSS 2025最佳系统论文提名！
@@ -121,18 +131,18 @@ cd legged_gym &&  pip install -e . && cd ..
 ### 策略训练
 在不同地形上训练站立策略：
 ```bash
-python legged_gym/scripts/train.py --task g1_${terrain} --run_name test_g1 # [ground, platform, slope, wall]
+python legged_gym/legged_gym/scripts/train.py --task g1_${terrain} --run_name test_g1 # [ground, platform, slope, wall]
 ```
 
 训练完成后，你可以运行生成的检查点：
 ```bash
-python legged_gym/scripts/play.py --task g1_${terrain} --checkpoint_path ${/path/to/ckpt.pt} # [ground, platform, slope, wall]
+python legged_gym/legged_gym/scripts/play.py --task g1_${terrain} --checkpoint_path ${/path/to/ckpt.pt} # [ground, platform, slope, wall]
 ```
 
 ### 策略评估
 我们还提供了评估脚本来记录成功率、脚部移动距离、运动平滑度和消耗能量：
 ```bash
-python legged_gym/scripts/eval/eval_${terrain}.py --task g1_${terrain} --checkpoint_path ${/path/to/ckpt.pt} # [ground, platform, slope, wall]
+python legged_gym/legged_gym/scripts/eval/eval_${terrain}.py --task g1_${terrain} --checkpoint_path ${/path/to/ckpt.pt} # [ground, platform, slope, wall]
 ```
 在评估过程中应用领域随机化，使结果更具泛化性。
 
@@ -144,13 +154,13 @@ python legged_gym/scripts/eval/eval_${terrain}.py --task g1_${terrain} --checkpo
 
 首先，运行以下命令收集生成的运动：
 ```bash
-python legged_gym/scripts/visualization/motion_collection.py --task g1_${terrain} --checkpoint_path ${/path/to/ckpt.pt} # [ground, platform, slope, wall]
+python legged_gym/legged_gym/scripts/visualization/motion_collection.py --task g1_${terrain} --checkpoint_path ${/path/to/ckpt.pt} # [ground, platform, slope, wall]
 ```
 
 其次，绘制运动关键帧的3D轨迹：
 ```bash
-python legged_gym/scripts/visualization/trajectory_hands_feet.py  --terrain ${terrain} # [ground, platform, slope, wall]
-python legged_gym/scripts/visualization/trajectory_head_pelvis.py  --terrain ${terrain} # [ground, platform, slope, wall]
+python legged_gym/legged_gym/scripts/visualization/trajectory_hands_feet.py  --terrain ${terrain} # [ground, platform, slope, wall]
+python legged_gym/legged_gym/scripts/visualization/trajectory_head_pelvis.py  --terrain ${terrain} # [ground, platform, slope, wall]
 ```
 
 ### 从俯卧姿势开始训练
@@ -173,7 +183,7 @@ python legged_gym/scripts/visualization/trajectory_head_pelvis.py  --terrain ${t
 
 我们还支持从俯卧姿势开始的训练：
 ```bash
-python legged_gym/scripts/train.py --task g1_ground_prone --run_name test_g1_ground_prone
+python legged_gym/legged_gym/scripts/train.py --task g1_ground_prone --run_name test_g1_ground_prone
 ```
 学习到的策略也可以处理侧卧姿势。然而，从俯卧姿势训练时，需要对髋关节施加更严格的约束以防止剧烈运动。这个问题使得俯卧和仰卧姿势的联合训练的可行性目前尚不明确。解决这个问题将是未来有价值的工作。
 
@@ -195,8 +205,8 @@ python legged_gym/scripts/train.py --task g1_ground_prone --run_name test_g1_gro
 
 作为示例，我们提供了Unitree H1和[High Torque Mini Pi](https://www.hightorquerobotics.com/pi/)在地面上的训练代码：
 ```bash
-python legged_gym/scripts/train.py --task h1_ground --run_name test_h1_ground 
-python legged_gym/scripts/train.py --task pi_ground --run_name test_minipi_ground
+python legged_gym/legged_gym/scripts/train.py --task h1_ground --run_name test_h1_ground 
+python legged_gym/legged_gym/scripts/train.py --task pi_ground --run_name test_minipi_ground
 ```
 
 ### 硬件部署的潜在建议
