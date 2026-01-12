@@ -16,15 +16,25 @@ This is the official PyTorch implementation of the RSS conference paper "[**Lear
 </p>
 
 ## 📑 Table of Contents
-- [🔥 News](#-news)
-- [📝 TODO List](#-todo-list)
-- [🛠️ Installation Instructions](#-installation-instructions)
-- [🤖 Run HoST on Unitree G1](#-run-host-on-unitree-g1)
-- [🧭 Extend HoST to Other Humanoid Robots](#-extend-host-to-other-humanoid-robots-tips)
-- [✉️ Contact](#-contact)
-- [🏷️ License](#-license)
-- [🎉 Acknowledgments](#-acknowledgments)
-- [📝 Citation](#-citation)
+- [HoST: Humanoid Standing-up Control](#host-humanoid-standing-up-control)
+  - [📑 Table of Contents](#-table-of-contents)
+  - [🔥 News](#-news)
+  - [📝 TODO List](#-todo-list)
+  - [🛠️ Installation Instructions](#️-installation-instructions)
+    - [Erorr Catching](#erorr-catching)
+  - [🤖 Run HoST on Unitree G1](#-run-host-on-unitree-g1)
+    - [Overview of Main Simulation Motions](#overview-of-main-simulation-motions)
+    - [Policy Training](#policy-training)
+    - [Policy Evaluation](#policy-evaluation)
+    - [Motion Visualization](#motion-visualization)
+    - [Train from Prone Postures](#train-from-prone-postures)
+  - [🧭 Extend HoST to Other Humanoid Robots: Tips](#-extend-host-to-other-humanoid-robots-tips)
+    - [Lessons Learned from Unitree H1 and H1-2](#lessons-learned-from-unitree-h1-and-h1-2)
+    - [Potential Tips for Hardware Deployment](#potential-tips-for-hardware-deployment)
+  - [✉️ Contact](#️-contact)
+  - [🏷️ License](#️-license)
+  - [🎉 Acknowledgments](#-acknowledgments)
+  - [📝 Citation](#-citation)
 
 ## 🔥 News
 - \[2025-06\] HoST is selected as a Best Systems Paper Finalist at RSS 2025!
