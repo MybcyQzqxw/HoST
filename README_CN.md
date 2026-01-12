@@ -88,9 +88,9 @@ cd HoST
 conda env create -f conda_env.yml 
 conda activate host
 ```
-安装pytorch 1.10和cuda-11.3：
+安装对应 cuda 12.1 的 pytorch 2.2.2【RTX 4090 可用】：
 ```bash
-pip3 install torch==1.10.0+cu113 torchvision==0.11.1+cu113 torchaudio==0.10.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
+pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cu121
 ```
 
 下载并安装[Isaac Gym](https://developer.nvidia.com/isaac-gym)：
