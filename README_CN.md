@@ -78,16 +78,19 @@
 
 
 ## 🛠️ 安装说明
+
 克隆此仓库：
 ```bash
 git clone https://github.com/OpenRobotLab/HoST.git
 cd HoST
 ```
+
 创建conda环境：
 ```bash
 conda env create -f conda_env.yml 
 conda activate host
 ```
+
 安装对应 cuda 12.1 的 pytorch 2.2.2【RTX 4090 可用】：
 ```bash
 pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cu121
@@ -97,11 +100,13 @@ pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https
 ```bash
 cd isaacgym/python && pip install -e .
 ```
+
 安装rsl_rl（PPO实现）和legged gym：
 ```bash
 cd rsl_rl && pip install -e . && cd .. 
 cd legged_gym &&  pip install -e . && cd .. 
 ```
+
 ### 错误处理
 关于潜在的安装错误，请参考[此文档](docs/ERROR.md)获取解决方案。
 

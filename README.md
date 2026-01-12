@@ -88,9 +88,9 @@ Create a conda environment:
 conda env create -f conda_env.yml 
 conda activate host
 ```
-Install pytorch 1.10 with cuda-11.3:
+Install pytorch 2.2.2 with cuda-12.1 [Compatible with RTX 4090]:
 ```bash
-pip3 install torch==1.10.0+cu113 torchvision==0.11.1+cu113 torchaudio==0.10.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
+pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cu121
 ```
 
 Download and install [Isaac Gym](https://developer.nvidia.com/isaac-gym):
