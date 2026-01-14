@@ -136,12 +136,42 @@ cd legged_gym &&  pip install -e . && cd ..
 ### 策略训练
 在不同地形上训练站立策略：
 ```bash
-python legged_gym/legged_gym/scripts/train.py --task g1_${terrain} --run_name test_g1 # [ground, platform, slope, wall]
+python legged_gym/scripts/train.py --task g1_${terrain} --run_name test_g1 # [ground, platform, slope, wall]
+```
+
+具体命令示例：
+```bash
+# 地面训练
+python legged_gym/scripts/train.py --task g1_ground --run_name test_g1
+
+# 平台训练
+python legged_gym/scripts/train.py --task g1_platform --run_name test_g1
+
+# 斜坡训练
+python legged_gym/scripts/train.py --task g1_slope --run_name test_g1
+
+# 墙壁训练
+python legged_gym/scripts/train.py --task g1_wall --run_name test_g1
 ```
 
 训练完成后，你可以运行生成的检查点：
 ```bash
-python legged_gym/legged_gym/scripts/play.py --task g1_${terrain} --checkpoint_path ${/path/to/ckpt.pt} # [ground, platform, slope, wall]
+python legged_gym/scripts/play.py --task g1_${terrain} --checkpoint_path ${/path/to/ckpt.pt} # [ground, platform, slope, wall]
+```
+
+具体命令示例：
+```bash
+# 地面环境回放
+python legged_gym/scripts/play.py --task g1_ground --checkpoint_path /path/to/ckpt.pt
+
+# 平台环境回放
+python legged_gym/scripts/play.py --task g1_platform --checkpoint_path /path/to/ckpt.pt
+
+# 斜坡环境回放
+python legged_gym/scripts/play.py --task g1_slope --checkpoint_path /path/to/ckpt.pt
+
+# 墙壁环境回放
+python legged_gym/scripts/play.py --task g1_wall --checkpoint_path /path/to/ckpt.pt
 ```
 
 ### 策略评估

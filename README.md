@@ -134,9 +134,39 @@ Train standing-up policies over different terrains:
 python legged_gym/scripts/train.py --task g1_${terrain} --run_name test_g1 # [ground, platform, slope, wall]
 ```
 
+Specific command examples:
+```bash
+# Ground training
+python legged_gym/scripts/train.py --task g1_ground --run_name test_g1
+
+# Platform training
+python legged_gym/scripts/train.py --task g1_platform --run_name test_g1
+
+# Slope training
+python legged_gym/scripts/train.py --task g1_slope --run_name test_g1
+
+# Wall training
+python legged_gym/scripts/train.py --task g1_wall --run_name test_g1
+```
+
 After training, you may play the resulted checkpoints:
 ```bash
 python legged_gym/scripts/play.py --task g1_${terrain} --checkpoint_path ${/path/to/ckpt.pt} # [ground, platform, slope, wall]
+```
+
+Specific command examples:
+```bash
+# Ground environment playback
+python legged_gym/scripts/play.py --task g1_ground --checkpoint_path /path/to/ckpt.pt
+
+# Platform environment playback
+python legged_gym/scripts/play.py --task g1_platform --checkpoint_path /path/to/ckpt.pt
+
+# Slope environment playback
+python legged_gym/scripts/play.py --task g1_slope --checkpoint_path /path/to/ckpt.pt
+
+# Wall environment playback
+python legged_gym/scripts/play.py --task g1_wall --checkpoint_path /path/to/ckpt.pt
 ```
 
 ### Policy Evaluation
