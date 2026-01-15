@@ -2,7 +2,7 @@
   <mujoco>
     <compiler meshdir="meshes" balanceinertia="true" discardvisual="true" />
   </mujoco>
-  <link name="torso">
+  <link name="torso_link">
     <inertial>
       <origin xyz="-0.012732 0.001920 0.238652" rpy="0 0 0" />
       <mass value="22.905686" />
@@ -11,7 +11,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/torso.stl" />
+        <mesh filename="meshes/torso_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -20,11 +20,11 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/torso.stl" />
+        <mesh filename="meshes/torso_link.stl" />
       </geometry>
     </collision>
   </link>
-  <link name="rhip1">
+  <link name="right_hip_yaw_link">
     <inertial>
       <origin xyz="-0.078509 -0.000004 -0.118031" rpy="0 0 0" />
       <mass value="2.389579" />
@@ -33,7 +33,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rhip1.stl" />
+        <mesh filename="meshes/right_hip_yaw_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -42,17 +42,17 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rhip1.stl" />
+        <mesh filename="meshes/right_hip_yaw_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="rhipYaw" type="continuous">
+  <joint name="right_hip_yaw_joint" type="continuous">
     <origin xyz="0 -0.1 0.02324" rpy="0 0 0" />
-    <parent link="torso" />
-    <child link="rhip1" />
+    <parent link="torso_link" />
+    <child link="right_hip_yaw_link" />
     <axis xyz="0 0 1" />
   </joint>
-  <link name="rhip2">
+  <link name="right_hip_roll_link">
     <inertial>
       <origin xyz="0.051206 -0.002730 -0.000288" rpy="0 0 0" />
       <mass value="2.507088" />
@@ -61,7 +61,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rhip2.stl" />
+        <mesh filename="meshes/right_hip_roll_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -70,17 +70,17 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rhip2.stl" />
+        <mesh filename="meshes/right_hip_roll_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="rhipRoll" type="continuous">
+  <joint name="right_hip_roll_joint" type="continuous">
     <origin xyz="-0.054 0 -0.13924" rpy="0 0 0" />
-    <parent link="rhip1" />
-    <child link="rhip2" />
+    <parent link="right_hip_yaw_link" />
+    <child link="right_hip_roll_link" />
     <axis xyz="-1 0 0" />
   </joint>
-  <link name="rthigh">
+  <link name="right_hip_pitch_link">
     <inertial>
       <origin xyz="0.005701 -0.002335 -0.170006" rpy="0 0 0" />
       <mass value="3.096463" />
@@ -89,7 +89,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rthigh.stl" />
+        <mesh filename="meshes/right_hip_pitch_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -98,17 +98,17 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rthigh.stl" />
+        <mesh filename="meshes/right_hip_pitch_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="rhipPitch" type="continuous">
+  <joint name="right_hip_pitch_joint" type="continuous">
     <origin xyz="0.0550000000000002 -9.99999986171368E-05 0" rpy="0 0 0" />
-    <parent link="rhip2" />
-    <child link="rthigh" />
+    <parent link="right_hip_roll_link" />
+    <child link="right_hip_pitch_link" />
     <axis xyz="0 1 0" />
   </joint>
-  <link name="rcalf">
+  <link name="right_knee_link">
     <inertial>
       <origin xyz="0.003761 0.000004 -0.143175" rpy="0 0 0" />
       <mass value="1.914266" />
@@ -117,7 +117,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rcalf.stl" />
+        <mesh filename="meshes/right_knee_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -126,17 +126,17 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rcalf.stl" />
+        <mesh filename="meshes/right_knee_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="rknee" type="continuous">
+  <joint name="right_knee_joint" type="continuous">
     <origin xyz="0 0 -0.375" rpy="0 0 0" />
-    <parent link="rthigh" />
-    <child link="rcalf" />
+    <parent link="right_hip_pitch_link" />
+    <child link="right_knee_link" />
     <axis xyz="0 1 0" />
   </joint>
-  <link name="rankle">
+  <link name="right_ankle_pitch_link">
     <inertial>
       <origin xyz="-0.025376 0.000103 0.003416" rpy="0 0 0" />
       <mass value="0.168311" />
@@ -145,7 +145,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rankle.stl" />
+        <mesh filename="meshes/right_ankle_pitch_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -154,17 +154,17 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rankle.stl" />
+        <mesh filename="meshes/right_ankle_pitch_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="rankle1" type="continuous">
+  <joint name="right_ankle_pitch_joint" type="continuous">
     <origin xyz="0 0 -0.349999999999999" rpy="0 0 0" />
-    <parent link="rcalf" />
-    <child link="rankle" />
+    <parent link="right_knee_link" />
+    <child link="right_ankle_pitch_link" />
     <axis xyz="0 1 0" />
   </joint>
-  <link name="rfoot">
+  <link name="right_ankle_roll_link">
     <inertial>
       <origin xyz="-0.061233 0.000106 -0.037793" rpy="0 0 0" />
       <mass value="1.581376" />
@@ -173,7 +173,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rfoot.stl" />
+        <mesh filename="meshes/right_ankle_roll_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -182,17 +182,17 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rfoot.stl" />
+        <mesh filename="meshes/right_ankle_roll_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="rankle2" type="continuous">
+  <joint name="right_ankle_roll_joint" type="continuous">
     <origin xyz="0.0410000000000016 0 0" rpy="0 0 0" />
-    <parent link="rankle" />
-    <child link="rfoot" />
+    <parent link="right_ankle_pitch_link" />
+    <child link="right_ankle_roll_link" />
     <axis xyz="1 0 0" />
   </joint>
-  <link name="lhip1">
+  <link name="left_hip_yaw_link">
     <inertial>
       <origin xyz="-0.078509 -0.000004 -0.118031" rpy="0 0 0" />
       <mass value="2.389579" />
@@ -201,7 +201,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lhip1.stl" />
+        <mesh filename="meshes/left_hip_yaw_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -210,17 +210,17 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lhip1.stl" />
+        <mesh filename="meshes/left_hip_yaw_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="lhipYaw" type="continuous">
+  <joint name="left_hip_yaw_joint" type="continuous">
     <origin xyz="0 0.0999999999999999 0.02324" rpy="0 0 0" />
-    <parent link="torso" />
-    <child link="lhip1" />
+    <parent link="torso_link" />
+    <child link="left_hip_yaw_link" />
     <axis xyz="0 0 1" />
   </joint>
-  <link name="lhip2">
+  <link name="left_hip_roll_link">
     <inertial>
       <origin xyz="0.051206 0.002733 -0.000280" rpy="0 0 0" />
       <mass value="2.507222" />
@@ -229,7 +229,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lhip2.stl" />
+        <mesh filename="meshes/left_hip_roll_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -238,17 +238,17 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lhip2.stl" />
+        <mesh filename="meshes/left_hip_roll_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="lhipRoll" type="continuous">
+  <joint name="left_hip_roll_joint" type="continuous">
     <origin xyz="-0.054 0 -0.13924" rpy="0 0 0" />
-    <parent link="lhip1" />
-    <child link="lhip2" />
+    <parent link="left_hip_yaw_link" />
+    <child link="left_hip_roll_link" />
     <axis xyz="-1 0 0" />
   </joint>
-  <link name="lthigh">
+  <link name="left_hip_pitch_link">
     <inertial>
       <origin xyz="0.004804 0.002343 -0.169952" rpy="0 0 0" />
       <mass value="3.096463" />
@@ -257,7 +257,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lthigh.stl" />
+        <mesh filename="meshes/left_hip_pitch_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -266,17 +266,17 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lthigh.stl" />
+        <mesh filename="meshes/left_hip_pitch_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="lhipPitch" type="continuous">
+  <joint name="left_hip_pitch_joint" type="continuous">
     <origin xyz="0.0550000000000005 0.000100000001382744 0" rpy="0 0 0" />
-    <parent link="lhip2" />
-    <child link="lthigh" />
+    <parent link="left_hip_roll_link" />
+    <child link="left_hip_pitch_link" />
     <axis xyz="0 -1 0" />
   </joint>
-  <link name="lcalf">
+  <link name="left_knee_link">
     <inertial>
       <origin xyz="0.003757 -0.000290 -0.143175" rpy="0 0 0" />
       <mass value="1.914266" />
@@ -285,7 +285,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lcalf.stl" />
+        <mesh filename="meshes/left_knee_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -294,17 +294,17 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lcalf.stl" />
+        <mesh filename="meshes/left_knee_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="lknee" type="continuous">
+  <joint name="left_knee_joint" type="continuous">
     <origin xyz="0 0 -0.375" rpy="0 0 0" />
-    <parent link="lthigh" />
-    <child link="lcalf" />
+    <parent link="left_hip_pitch_link" />
+    <child link="left_knee_link" />
     <axis xyz="0 -1 0" />
   </joint>
-  <link name="lankle">
+  <link name="left_ankle_pitch_link">
     <inertial>
       <origin xyz="-0.025376 0.000103 0.003416" rpy="0 0 0" />
       <mass value="0.168311" />
@@ -313,7 +313,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lankle.stl" />
+        <mesh filename="meshes/left_ankle_pitch_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -322,17 +322,17 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lankle.stl" />
+        <mesh filename="meshes/left_ankle_pitch_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="lankle1" type="continuous">
+  <joint name="left_ankle_pitch_joint" type="continuous">
     <origin xyz="0 0 -0.35" rpy="0 0 0" />
-    <parent link="lcalf" />
-    <child link="lankle" />
+    <parent link="left_knee_link" />
+    <child link="left_ankle_pitch_link" />
     <axis xyz="0 -1 0" />
   </joint>
-  <link name="lfoot">
+  <link name="left_ankle_roll_link">
     <inertial>
       <origin xyz="-0.061228 -0.000129 -0.037791" rpy="0 0 0" />
       <mass value="1.581270" />
@@ -341,7 +341,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lfoot.stl" />
+        <mesh filename="meshes/left_ankle_roll_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -350,17 +350,17 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lfoot.stl" />
+        <mesh filename="meshes/left_ankle_roll_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="lankle2" type="continuous">
+  <joint name="left_ankle_roll_joint" type="continuous">
     <origin xyz="0.0410000000000001 0 0" rpy="0 0 0" />
-    <parent link="lankle" />
-    <child link="lfoot" />
+    <parent link="left_ankle_pitch_link" />
+    <child link="left_ankle_roll_link" />
     <axis xyz="-1 0 0" />
   </joint>
-  <link name="rshoulder1">
+  <link name="right_shoulder_pitch_link">
     <inertial>
       <origin xyz="-0.072957 -0.077869 0.000004" rpy="0 0 0" />
       <mass value="1.938195" />
@@ -369,7 +369,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rshoulder1.stl" />
+        <mesh filename="meshes/right_shoulder_pitch_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -378,17 +378,17 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rshoulder1.stl" />
+        <mesh filename="meshes/right_shoulder_pitch_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="rshoulderPitch" type="continuous">
+  <joint name="right_shoulder_pitch_joint" type="continuous">
     <origin xyz="-0.0262500000000002 -0.13476 0.389" rpy="0 0 0" />
-    <parent link="torso" />
-    <child link="rshoulder1" />
+    <parent link="torso_link" />
+    <child link="right_shoulder_pitch_link" />
     <axis xyz="0 -1 0" />
   </joint>
-  <link name="rshoulder2">
+  <link name="right_shoulder_roll_link">
     <inertial>
       <origin xyz="0.050911 0.000002 -0.017501" rpy="0 0 0" />
       <mass value="2.116461" />
@@ -397,7 +397,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rshoulder2.stl" />
+        <mesh filename="meshes/right_shoulder_roll_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -406,17 +406,17 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rshoulder2.stl" />
+        <mesh filename="meshes/right_shoulder_roll_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="rshoulderRoll" type="continuous">
+  <joint name="right_shoulder_roll_joint" type="continuous">
     <origin xyz="-0.049 -0.0842399999999996 0" rpy="0 0 0" />
-    <parent link="rshoulder1" />
-    <child link="rshoulder2" />
+    <parent link="right_shoulder_pitch_link" />
+    <child link="right_shoulder_roll_link" />
     <axis xyz="1 0 0" />
   </joint>
-  <link name="rbigarm">
+  <link name="right_shoulder_yaw_link">
     <inertial>
       <origin xyz="0.002752 0.000004 -0.123717" rpy="0 0 0" />
       <mass value="1.703058" />
@@ -425,7 +425,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rbigarm.stl" />
+        <mesh filename="meshes/right_shoulder_yaw_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -434,26 +434,26 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rbigarm.stl" />
+        <mesh filename="meshes/right_shoulder_yaw_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="rshoulderYaw" type="continuous">
+  <joint name="right_shoulder_yaw_joint" type="continuous">
     <origin xyz="0.049 0 -0.0497599999999999" rpy="0 0 0" />
-    <parent link="rshoulder2" />
-    <child link="rbigarm" />
+    <parent link="right_shoulder_roll_link" />
+    <child link="right_shoulder_yaw_link" />
     <axis xyz="0 0 1" />
   </joint>
-  <link name="rforearm">
+  <link name="right_elbow_link">
     <inertial>
       <origin xyz="0.002409 0.009994 -0.089886" rpy="0 0 0" />
-      <mass value="1.938195" />
+      <mass value="0.181283" />
       <inertia ixx="0.001368" ixy="0.000000" ixz="0.000029" iyy="0.001374" iyz="0.000000" izz="0.000040" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rforearm.stl" />
+        <mesh filename="meshes/right_elbow_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -462,26 +462,26 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/rforearm.stl" />
+        <mesh filename="meshes/right_elbow_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="relbow" type="continuous">
+  <joint name="right_elbow_joint" type="continuous">
     <origin xyz="0 -0.0100000000000002 -0.30324" rpy="0 0 0" />
-    <parent link="rbigarm" />
-    <child link="rforearm" />
+    <parent link="right_shoulder_yaw_link" />
+    <child link="right_elbow_link" />
     <axis xyz="0 -1 0" />
   </joint>
-  <link name="lshoulder1">
+  <link name="left_shoulder_pitch_link">
     <inertial>
       <origin xyz="-0.072957 0.077869 -0.000004" rpy="0 0 0" />
-      <mass value="2.116461" />
+      <mass value="1.938195" />
       <inertia ixx="0.002538" ixy="-0.000898" ixz="0.000001" iyy="0.006956" iyz="0.000000" izz="0.007542" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lshoulder1.stl" />
+        <mesh filename="meshes/left_shoulder_pitch_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -490,26 +490,26 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lshoulder1.stl" />
+        <mesh filename="meshes/left_shoulder_pitch_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="lshoulderPitch" type="continuous">
+  <joint name="left_shoulder_pitch_joint" type="continuous">
     <origin xyz="-0.0262500000000013 0.13476 0.389" rpy="0 0 0" />
-    <parent link="torso" />
-    <child link="lshoulder1" />
+    <parent link="torso_link" />
+    <child link="left_shoulder_pitch_link" />
     <axis xyz="0 1 0" />
   </joint>
-  <link name="lshoulder2">
+  <link name="left_shoulder_roll_link">
     <inertial>
       <origin xyz="0.050911 0.000002 -0.017501" rpy="0 0 0" />
-      <mass value="1.703058" />
+      <mass value="2.116461" />
       <inertia ixx="0.002659" ixy="0.000000" ixz="0.000079" iyy="0.003457" iyz="0.000000" izz="0.003122" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lshoulder2.stl" />
+        <mesh filename="meshes/left_shoulder_roll_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -518,17 +518,17 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lshoulder2.stl" />
+        <mesh filename="meshes/left_shoulder_roll_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="lshoulderRoll" type="continuous">
+  <joint name="left_shoulder_roll_joint" type="continuous">
     <origin xyz="-0.049 0.0842399999999999 0" rpy="0 0 0" />
-    <parent link="lshoulder1" />
-    <child link="lshoulder2" />
+    <parent link="left_shoulder_pitch_link" />
+    <child link="left_shoulder_roll_link" />
     <axis xyz="1 0 0" />
   </joint>
-  <link name="lbigarm">
+  <link name="left_shoulder_yaw_link">
     <inertial>
       <origin xyz="0.002752 0.000004 -0.123717" rpy="0 0 0" />
       <mass value="1.703058" />
@@ -537,7 +537,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lbigarm.stl" />
+        <mesh filename="meshes/left_shoulder_yaw_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -546,17 +546,17 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lbigarm.stl" />
+        <mesh filename="meshes/left_shoulder_yaw_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="lshoulderYaw" type="continuous">
+  <joint name="left_shoulder_yaw_joint" type="continuous">
     <origin xyz="0.049 0 -0.04976" rpy="0 0 0" />
-    <parent link="lshoulder2" />
-    <child link="lbigarm" />
+    <parent link="left_shoulder_roll_link" />
+    <child link="left_shoulder_yaw_link" />
     <axis xyz="0 0 1" />
   </joint>
-  <link name="lforearm">
+  <link name="left_elbow_link">
     <inertial>
       <origin xyz="0.002409 -0.010006 -0.089886" rpy="0 0 0" />
       <mass value="0.181283" />
@@ -565,7 +565,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lforearm.stl" />
+        <mesh filename="meshes/left_elbow_link.stl" />
       </geometry>
       <material name="">
         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
@@ -574,14 +574,14 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="meshes/lforearm.stl" />
+        <mesh filename="meshes/left_elbow_link.stl" />
       </geometry>
     </collision>
   </link>
-  <joint name="lelbow" type="continuous">
+  <joint name="left_elbow_joint" type="continuous">
     <origin xyz="0 0.0099999999999949 -0.30324" rpy="0 0 0" />
-    <parent link="lbigarm" />
-    <child link="lforearm" />
+    <parent link="left_shoulder_yaw_link" />
+    <child link="left_elbow_link" />
     <axis xyz="0 1 0" />
   </joint>
 </robot>
