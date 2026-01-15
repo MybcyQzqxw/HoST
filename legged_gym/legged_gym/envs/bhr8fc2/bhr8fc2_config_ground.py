@@ -10,86 +10,69 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         pos = [0.0, 0.0, 0.5]  # x,y,z [m]
         rot = [0.0, -1, 0, 1.0]  # x,y,z,w [quat]
         
-        # TODO: 根据BHR8FC2的实际关节名称和默认姿势调整这些值
-        target_joint_angles = {  # target angles [rad] when action = 0.0
-            # 左腿关节 (根据实际关节名称修改)
-            'left_hip_yaw': 0.0,
-            'left_hip_roll': 0.0,
-            'left_hip_pitch': -0.1,
-            'left_knee': 0.3,
-            'left_ankle_pitch': -0.2,
-            'left_ankle_roll': 0.0,
-            
+        target_joint_angles = {
             # 右腿关节
-            'right_hip_yaw': 0.0,
-            'right_hip_roll': 0.0,
-            'right_hip_pitch': -0.1,
-            'right_knee': 0.3,
-            'right_ankle_pitch': -0.2,
-            'right_ankle_roll': 0.0,
-            
-            # 腰部关节
-            'waist_yaw': 0.0,
-            'waist_pitch': 0.0,
-            'waist_roll': 0.0,
-            
-            # 左臂关节
-            'left_shoulder_pitch': 0.0,
-            'left_shoulder_roll': 0.3,
-            'left_shoulder_yaw': 0.0,
-            'left_elbow': 0.0,
-            
+            'rhipYaw': 0.0,
+            'rhipRoll': 0.0,
+            'rhipPitch': 0.0,
+            'rknee': 0.0,
+            'rankle1': 0.0,
+            'rankle2': 0.0,
+            # 左腿关节
+            'lhipYaw': 0.0,
+            'lhipRoll': 0.0,
+            'lhipPitch': 0.0,
+            'lknee': 0.0,
+            'lankle1': 0.0,
+            'lankle2': 0.0,
             # 右臂关节
-            'right_shoulder_pitch': 0.0,
-            'right_shoulder_roll': -0.3,
-            'right_shoulder_yaw': 0.0,
-            'right_elbow': 0.0,
+            'rshoulderPitch': 0.0,
+            'rshoulderRoll': 0.0,
+            'rshoulderYaw': 0.0,
+            'relbow': 0.0,
+            # 左臂关节
+            'lshoulderPitch': 0.0,
+            'lshoulderRoll': 0.0,
+            'lshoulderYaw': 0.0,
+            'lelbow': 0.0,
         }
 
         default_joint_angles = {
-            # 左腿关节
-            'left_hip_yaw': 0.0,
-            'left_hip_roll': 0.0,
-            'left_hip_pitch': -0.1,
-            'left_knee': 0.3,
-            'left_ankle_pitch': -0.2,
-            'left_ankle_roll': 0.0,
-            
             # 右腿关节
-            'right_hip_yaw': 0.0,
-            'right_hip_roll': 0.0,
-            'right_hip_pitch': -0.1,
-            'right_knee': 0.3,
-            'right_ankle_pitch': -0.2,
-            'right_ankle_roll': 0.0,
-            
-            # 腰部关节
-            'waist_yaw': 0.0,
-            'waist_pitch': 0.0,
-            'waist_roll': 0.0,
-            
-            # 左臂关节
-            'left_shoulder_pitch': 0.0,
-            'left_shoulder_roll': 0.0,
-            'left_shoulder_yaw': 0.0,
-            'left_elbow': 0.8,
-            
+            'rhipYaw': 0.0,
+            'rhipRoll': 0.0,
+            'rhipPitch': 0.0,
+            'rknee': 0.0,
+            'rankle1': 0.0,
+            'rankle2': 0.0,
+            # 左腿关节
+            'lhipYaw': 0.0,
+            'lhipRoll': 0.0,
+            'lhipPitch': 0.0,
+            'lknee': 0.0,
+            'lankle1': 0.0,
+            'lankle2': 0.0,
             # 右臂关节
-            'right_shoulder_pitch': 0.0,
-            'right_shoulder_roll': 0.0,
-            'right_shoulder_yaw': 0.0,
-            'right_elbow': 0.8,
+            'rshoulderPitch': 0.0,
+            'rshoulderRoll': 0.0,
+            'rshoulderYaw': 0.0,
+            'relbow': 0.0,
+            # 左臂关节
+            'lshoulderPitch': 0.0,
+            'lshoulderRoll': 0.0,
+            'lshoulderYaw': 0.0,
+            'lelbow': 0.0,
         }
 
     class env(LeggedRobotCfg.env):
-        # TODO: 根据BHR8FC2的实际自由度数量调整
-        num_dofs = 20  # 根据机器人实际自由度修改
+        num_dofs = 20
         num_actions = 20
-        num_one_step_observations = 76
-        num_actor_history = 6
+        # 单步观测维度 3【基座角速度】 + 3【投影重力：机器人坐标系下的重力向量】 + 20【关节位置】 + 20【关节速度】 + 20【上一步动作】 + 1【动作缩放因子】
+        num_one_step_observations = 67
+        num_actor_history = 6  # 历史观测步数
         num_observations = num_actor_history * num_one_step_observations
-        episode_length_s = 10  # episode length in seconds
-        unactuated_timesteps = 30
+        episode_length_s = 10  # 每个episode的时长（秒）
+        unactuated_timesteps = 30  # 环境启动后无动作控制的时间步数（用于稳定初始状态）
 
     class control(LeggedRobotCfg.control):
         # PD Drive parameters (根据BHR8FC2实际参数调整)
@@ -110,7 +93,10 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             'elbow': 4,
             'waist': 4,
         }  # [N*m*s/rad]
+        # action scale: target angle = actionRescale * action + cur_dof_pos
         action_scale = 1
+        # decimation: Number of control action updates @ sim DT per policy DT
+        # 策略网络控制频率相对于物理仿真频率的降低倍数
         decimation = 4
 
     class terrain:
@@ -136,11 +122,9 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         slope_treshold = 0.75
 
     class asset(LeggedRobotCfg.asset):
-        # TODO: 将URDF文件放置到正确位置后修改此路径
-        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/bhr8fc2/bhr8fc2.urdf'
+        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/bhr8fc2/BHR8FC2.urdf'
         name = "bhr8fc2"
         
-        # TODO: 根据URDF中的实际link名称修改
         left_foot_name = "left_ankle_pitch"
         right_foot_name = "right_ankle_pitch"
         left_knee_name = 'left_knee'
@@ -153,24 +137,22 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         left_shoulder_name = "left_shoulder"
         right_shoulder_name = "right_shoulder"
 
-        # TODO: 根据实际关节名称修改
-        left_leg_joints = ['left_hip_yaw', 'left_hip_roll', 'left_hip_pitch', 'left_knee', 'left_ankle_pitch', 'left_ankle_roll']
-        right_leg_joints = ['right_hip_yaw', 'right_hip_roll', 'right_hip_pitch', 'right_knee', 'right_ankle_pitch', 'right_ankle_roll']
-        left_hip_joints = ['left_hip_yaw']
-        right_hip_joints = ['right_hip_yaw']
-        left_hip_roll_joints = ['left_hip_roll']
-        right_hip_roll_joints = ['right_hip_roll']
-        left_hip_pitch_joints = ['left_hip_pitch']
-        right_hip_pitch_joints = ['right_hip_pitch']
-        left_shoulder_roll_joints = ['left_shoulder_roll']
-        right_shoulder_roll_joints = ['right_shoulder_roll']
-        left_knee_joints = ['left_knee']
-        right_knee_joints = ['right_knee']
-        left_arm_joints = ['left_shoulder_pitch', 'left_shoulder_roll', 'left_shoulder_yaw', 'left_elbow']
-        right_arm_joints = ['right_shoulder_pitch', 'right_shoulder_roll', 'right_shoulder_yaw', 'right_elbow']
-        waist_joints = ["waist_yaw"]
-        knee_joints = ['left_knee', 'right_knee']
-        ankle_joints = ['left_ankle_pitch', 'left_ankle_roll', 'right_ankle_pitch', 'right_ankle_roll']
+        left_leg_joints = ['lhipYaw', 'lhipRoll', 'lhipPitch', 'lknee', 'lankle1', 'lankle2']
+        right_leg_joints = ['rhipYaw', 'rhipRoll', 'rhipPitch', 'rknee', 'rankle1', 'rankle2']
+        left_hip_joints = ['lhipYaw']
+        right_hip_joints = ['rhipYaw']
+        left_hip_roll_joints = ['lhipRoll']
+        right_hip_roll_joints = ['rhipRoll']
+        left_hip_pitch_joints = ['lhipPitch']
+        right_hip_pitch_joints = ['rhipPitch']
+        left_shoulder_roll_joints = ['lshoulderRoll']
+        right_shoulder_roll_joints = ['rshoulderRoll']
+        left_knee_joints = ['lknee']
+        right_knee_joints = ['rknee']
+        left_arm_joints = ['lshoulderPitch', 'lshoulderRoll', 'lshoulderYaw', 'lelbow']
+        right_arm_joints = ['rshoulderPitch', 'rshoulderRoll', 'rshoulderYaw', 'relbow']
+        knee_joints = ['lknee', 'rknee']
+        ankle_joints = ['lankle1', 'lankle2', 'rankle1', 'rankle2']
 
         keyframe_name = "keyframe"
         head_name = 'keyframe_head'
