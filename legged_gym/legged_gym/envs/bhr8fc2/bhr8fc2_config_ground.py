@@ -5,63 +5,53 @@ class BHR8FC2Cfg(LeggedRobotCfg):
     """
     Configuration for BHR8FC2 humanoid robot on ground terrain.
     """
-    
     class init_state(LeggedRobotCfg.init_state):
         pos = [0.0, 0.0, 0.5]  # x,y,z [m]
         rot = [0.0, -1, 0, 1.0]  # x,y,z,w [quat]
-        
         target_joint_angles = {
-            # 右腿关节
-            'rhipYaw': 0.0,
-            'rhipRoll': 0.0,
-            'rhipPitch': 0.0,
-            'rknee': 0.0,
-            'rankle1': 0.0,
-            'rankle2': 0.0,
-            # 左腿关节
-            'lhipYaw': 0.0,
-            'lhipRoll': 0.0,
-            'lhipPitch': 0.0,
-            'lknee': 0.0,
-            'lankle1': 0.0,
-            'lankle2': 0.0,
-            # 右臂关节
-            'rshoulderPitch': 0.0,
-            'rshoulderRoll': 0.0,
-            'rshoulderYaw': 0.0,
-            'relbow': 0.0,
-            # 左臂关节
-            'lshoulderPitch': 0.0,
-            'lshoulderRoll': 0.0,
-            'lshoulderYaw': 0.0,
-            'lelbow': 0.0,
+            'left_hip_yaw_joint': 0.0,
+            'left_hip_roll_joint': 0.0,
+            'left_hip_pitch_joint': -0.1,
+            'left_knee_joint': 0.3,
+            'left_ankle_pitch_joint': -0.2,
+            'left_ankle_roll_joint': 0.0,
+            'right_hip_yaw_joint': 0.0,
+            'right_hip_roll_joint': 0.0,
+            'right_hip_pitch_joint': -0.1,
+            'right_knee_joint': 0.3,
+            'right_ankle_pitch_joint': -0.2,
+            'right_ankle_roll_joint': 0.0,
+            'left_shoulder_pitch_joint': 0.0,
+            'left_shoulder_roll_joint': 0.3,
+            'left_shoulder_yaw_joint': 0.0,
+            'left_elbow_joint': 0.0,
+            'right_shoulder_pitch_joint': 0.0,
+            'right_shoulder_roll_joint': -0.3,
+            'right_shoulder_yaw_joint': 0.0,
+            'right_elbow_joint': 0.0,
         }
 
         default_joint_angles = {
-            # 右腿关节
-            'rhipYaw': 0.0,
-            'rhipRoll': 0.0,
-            'rhipPitch': 0.0,
-            'rknee': 0.0,
-            'rankle1': 0.0,
-            'rankle2': 0.0,
-            # 左腿关节
-            'lhipYaw': 0.0,
-            'lhipRoll': 0.0,
-            'lhipPitch': 0.0,
-            'lknee': 0.0,
-            'lankle1': 0.0,
-            'lankle2': 0.0,
-            # 右臂关节
-            'rshoulderPitch': 0.0,
-            'rshoulderRoll': 0.0,
-            'rshoulderYaw': 0.0,
-            'relbow': 0.0,
-            # 左臂关节
-            'lshoulderPitch': 0.0,
-            'lshoulderRoll': 0.0,
-            'lshoulderYaw': 0.0,
-            'lelbow': 0.0,
+            'left_hip_yaw_joint': 0.0,
+            'left_hip_roll_joint': 0.0,
+            'left_hip_pitch_joint': -0.1,
+            'left_knee_joint': 0.3,
+            'left_ankle_pitch_joint': -0.2,
+            'left_ankle_roll_joint': 0.0,
+            'right_hip_yaw_joint': 0.0,
+            'right_hip_roll_joint': 0.0,
+            'right_hip_pitch_joint': -0.1,
+            'right_knee_joint': 0.3,
+            'right_ankle_pitch_joint': -0.2,
+            'right_ankle_roll_joint': 0.0,
+            'left_shoulder_pitch_joint': 0.0,
+            'left_shoulder_roll_joint': 0.0,
+            'left_shoulder_yaw_joint': 0.0,
+            'left_elbow_joint': 0.8,
+            'right_shoulder_pitch_joint': 0.0,
+            'right_shoulder_roll_joint': 0.0,
+            'right_shoulder_yaw_joint': 0.0,
+            'right_elbow_joint': 0.8,
         }
 
     class env(LeggedRobotCfg.env):
@@ -83,7 +73,6 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             'ankle': 40,
             'shoulder': 100,
             'elbow': 100,
-            'waist': 100,
         }  # [N*m/rad]
         damping = {
             'hip': 4,
@@ -91,7 +80,6 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             'ankle': 2,
             'shoulder': 4,
             'elbow': 4,
-            'waist': 4,
         }  # [N*m*s/rad]
         # action scale: target angle = actionRescale * action + cur_dof_pos
         action_scale = 1
@@ -123,46 +111,49 @@ class BHR8FC2Cfg(LeggedRobotCfg):
 
     class asset(LeggedRobotCfg.asset):
         file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/bhr8fc2/BHR8FC2.urdf'
-        name = "bhr8fc2"
+        name = 'bhr8fc2'
         
-        left_foot_name = "left_ankle_pitch"
-        right_foot_name = "right_ankle_pitch"
+        left_foot_name = 'left_ankle_pitch'
+        right_foot_name = 'right_ankle_pitch'
         left_knee_name = 'left_knee'
         right_knee_name = 'right_knee'
-        foot_name = "ankle_roll"
-        
-        penalize_contacts_on = ["elbow", 'shoulder', 'waist', 'knee', 'hip']
+        foot_name = 'ankle_roll'
+        penalize_contacts_on = ['elbow', 'shoulder', 'knee', 'hip']
         terminate_after_contacts_on = []
 
-        left_shoulder_name = "left_shoulder"
-        right_shoulder_name = "right_shoulder"
+        left_shoulder_name = 'left_shoulder'
+        right_shoulder_name = 'right_shoulder'
+        left_leg_joints = ['left_hip_yaw_joint', 'left_hip_roll_joint', 'left_hip_pitch_joint', 'left_knee_joint', 'left_ankle_pitch_joint', 'left_ankle_roll_joint']
+        right_leg_joints = ['right_hip_yaw_joint', 'right_hip_roll_joint', 'right_hip_pitch_joint', 'right_knee_joint', 'right_ankle_pitch_joint', 'right_ankle_roll_joint']
+        left_hip_joints = ['left_hip_yaw_joint']
+        right_hip_joints = ['right_hip_yaw_joint']
+        left_hip_roll_joints = ['left_hip_roll_joint']
+        right_hip_roll_joints = ['right_hip_roll_joint']
+        left_hip_pitch_joints = ['left_hip_pitch_joint']
+        right_hip_pitch_joints = ['right_hip_pitch_joint']
 
-        left_leg_joints = ['lhipYaw', 'lhipRoll', 'lhipPitch', 'lknee', 'lankle1', 'lankle2']
-        right_leg_joints = ['rhipYaw', 'rhipRoll', 'rhipPitch', 'rknee', 'rankle1', 'rankle2']
-        left_hip_joints = ['lhipYaw']
-        right_hip_joints = ['rhipYaw']
-        left_hip_roll_joints = ['lhipRoll']
-        right_hip_roll_joints = ['rhipRoll']
-        left_hip_pitch_joints = ['lhipPitch']
-        right_hip_pitch_joints = ['rhipPitch']
-        left_shoulder_roll_joints = ['lshoulderRoll']
-        right_shoulder_roll_joints = ['rshoulderRoll']
-        left_knee_joints = ['lknee']
-        right_knee_joints = ['rknee']
-        left_arm_joints = ['lshoulderPitch', 'lshoulderRoll', 'lshoulderYaw', 'lelbow']
-        right_arm_joints = ['rshoulderPitch', 'rshoulderRoll', 'rshoulderYaw', 'relbow']
-        knee_joints = ['lknee', 'rknee']
-        ankle_joints = ['lankle1', 'lankle2', 'rankle1', 'rankle2']
+        left_shoulder_roll_joints = ['left_shoulder_roll_joint']
+        right_shoulder_roll_joints = ['right_shoulder_roll_joint']
 
-        keyframe_name = "keyframe"
+        left_knee_joints = ['left_knee_joint']
+        right_knee_joints = ['right_knee_joint']
+
+        left_arm_joints = ['left_shoulder_pitch_joint', 'left_shoulder_roll_joint', 'left_shoulder_yaw_joint', 'left_elbow_joint']
+        right_arm_joints = ['right_shoulder_pitch_joint', 'right_shoulder_roll_joint', 'right_shoulder_yaw_joint', 'right_elbow_joint']
+        knee_joints = ['left_knee_joint', 'right_knee_joint']
+        ankle_joints = ['left_ankle_pitch_joint', 'left_ankle_roll_joint', 'right_ankle_pitch_joint', 'right_ankle_roll_joint']
+
+        keyframe_name = 'keyframe'
         head_name = 'keyframe_head'
-        trunk_names = ["pelvis", "torso"]
+
+        trunk_names = ['pelvis', 'torso']
         base_name = 'torso_link'
 
         left_upper_body_names = ['left_shoulder_pitch', 'left_elbow']
         right_upper_body_names = ['right_shoulder_pitch', 'right_elbow']
         left_lower_body_names = ['left_hip_pitch', 'left_ankle_roll', 'left_knee']
         right_lower_body_names = ['right_hip_pitch', 'right_ankle_roll', 'right_knee']
+
         left_ankle_names = ['left_ankle_roll']
         right_ankle_names = ['right_ankle_roll']
 
