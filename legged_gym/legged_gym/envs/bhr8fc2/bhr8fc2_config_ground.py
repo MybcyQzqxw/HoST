@@ -55,6 +55,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         }
 
     class env(LeggedRobotCfg.env):
+        num_envs = 128  # 先用较小数量调试（原4096太多会卡）
         num_dofs = 20
         num_actions = 20
         # 单步观测维度 3【基座角速度】 +
@@ -243,7 +244,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             style_left_foot_displacement = 2.5
             style_right_foot_displacement = 2.5
             style_knee_deviation = -0.25
-            style_shank_orientation = 10
+            style_shank_orientation = 10  # 重新启用（已修复host_ground.py中的除零问题）
             style_ground_parallel = 20
             style_feet_distance = -10
             style_style_ang_vel_xy = 1
@@ -257,7 +258,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             target_target_base_height = 10
 
     class domain_rand:
-        use_random = True
+        use_random = True  # 重新启用domain randomization
 
         randomize_actuation_offset = use_random
         actuation_offset_range = [-0.05, 0.05]
@@ -343,4 +344,4 @@ class BHR8FC2CfgPPO(LeggedRobotCfgPPO):
         experiment_name = 'bhr8fc2_ground'
         algorithm_class_name = 'PPO'
         init_at_random_ep_len = True
-        max_iterations = 12000 # number of policy updates
+        max_iterations = 5000 # number of policy updates
