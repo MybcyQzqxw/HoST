@@ -160,7 +160,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         ankle_joints = ['left_ankle_pitch_joint', 'left_ankle_roll_joint', 'right_ankle_pitch_joint', 'right_ankle_roll_joint']
 
         keyframe_name = ''  # BHR8FC2 没有专门的 keyframe links
-        head_name = 'head'
+        head_name = 'head_link'
 
         trunk_names = ['torso']
         base_name = 'torso_link'
@@ -209,7 +209,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
 
         class scales:
             task_orientation = 1
-            task_head_height = 0  # TODO：暂时禁用头部高度奖励
+            task_head_height = 1
 
     class constraints( LeggedRobotCfg.rewards ):
         is_gaussian = True
@@ -244,7 +244,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             style_left_foot_displacement = 2.5
             style_right_foot_displacement = 2.5
             style_knee_deviation = -0.25
-            style_shank_orientation = 10  # 重新启用（已修复host_ground.py中的除零问题）
+            style_shank_orientation = 10
             style_ground_parallel = 20
             style_feet_distance = -10
             style_style_ang_vel_xy = 1
