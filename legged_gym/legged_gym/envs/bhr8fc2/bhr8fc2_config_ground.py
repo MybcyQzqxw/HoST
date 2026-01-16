@@ -95,17 +95,15 @@ class BHR8FC2Cfg(LeggedRobotCfg):
     class terrain:
         # 地形类型：'none', 'plane'(无限平面), 'heightfield'(复杂地形), 'trimesh'
         mesh_type = 'plane'
-
-        # 平面物理属性（这些参数在plane模式下有效）
+        horizontal_scale = 0.1  # [m] 水平分辨率
+        vertical_scale = 0.005  # [m] 垂直分辨率
+        border_size = 25  # [m] 地形边界缓冲区
+        curriculum = True
         static_friction = 0.8   # 静摩擦系数
         dynamic_friction = 0.7  # 动摩擦系数
         restitution = 0.3       # 恢复系数（0=完全非弹性，1=完全弹性碰撞）
 
         # ========== 以下参数仅在 heightfield/trimesh 模式下生效 ==========
-        curriculum = False  # plane模式下无课程学习
-        horizontal_scale = 0.1  # [m] 水平分辨率
-        vertical_scale = 0.005  # [m] 垂直分辨率
-        border_size = 25  # [m] 地形边界缓冲区
 
         # 高度测量（用于机器人感知复杂地形）
         measure_heights = False  # plane模式下不需要测量
@@ -185,84 +183,164 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         flip_visual_attachments = False  # 是否翻转视觉附件（根据URDF文件调整）
 
     class rewards(LeggedRobotCfg.rewards):
-        soft_dof_pos_limit = 0.9
-        soft_dof_vel_limit = 0.9
-        base_height_target = 0.75  # TODO: 根据BHR8FC2实际高度调整
-        only_positive_rewards = False
-        orientation_sigma = 1
-        is_gaussian = True
-        target_head_height = 1  # TODO: 根据实际高度调整
+        base_height_target = 0.75  # 【调整】目标质心高度
+        target_head_height = 1  # 【调整】目标头部高度
         target_head_margin = 1
         target_base_height_phase1 = 0.45
         target_base_height_phase2 = 0.45
         target_base_height_phase3 = 0.65
-        orientation_threshold = 0.99
+
+        soft_dof_pos_limit = 0.9  # 软关节位置限制（安全范围比例）
+        soft_dof_vel_limit = 0.9  # 软关节速度限制（安全范围比例）
+        only_positive_rewards = False  # 是否只计算正奖励
+        orientation_sigma = 1  # 姿态奖励的敏感度（越小越严格）
+        orientation_threshold = 0.99  # 姿态奖励阈值（姿态向量点积要大于 0.99）
+        is_gaussian = True  # 是否使用高斯函数计算奖励
+        # 脚的位置与参考轨迹的误差敏感度（模仿学习用）
         left_foot_displacement_sigma = -2
         right_foot_displacement_sigma = -2
-        target_dof_pos_sigma = -0.1
-        tracking_sigma = 0.25
+        target_dof_pos_sigma = -0.1  # 关节位置目标奖励敏感度
+        tracking_sigma = 0.25  # 速度追踪奖励敏感度
 
         reward_groups = ['task', 'regu', 'style', 'target']
         num_reward_groups = len(reward_groups)
         reward_group_weights = [2.5, 0.1, 1, 1]
 
-        class scales(LeggedRobotCfg.rewards.scales):
-            # Task rewards
-            alive = 1.0
-            base_height = 2.0
-            pelvis_orientation = 3.0
-            torso_orientation = 3.0
-            head_orientation = 5.0
-            head_height = 1.5
-            
-            # Regularization rewards
-            action_rate = -0.01
-            torques = -1e-5
-            dof_acc = -2.5e-7
-            collision = -5.0
-            dof_pos_limits = -10.0
-            dof_vel = -0.0
-            
-            # Style rewards
-            target_joint_pos_upper = 0.55
-            target_joint_pos_lower = 0.55
-            feet_stumble = -0.0
-            left_foot_displacement = 0.3
-            right_foot_displacement = 0.3
-            feet_displacement = 0.3
-            feet_drag = 0.0
-            
-            # Target rewards
-            tracking_lin_vel = 0.0
-            tracking_ang_vel = 0.0
+        class scales:
+            task_orientation = 1
+            task_head_height = 1
 
-    class curriculum(LeggedRobotCfg.curriculum):
-        base_height_target = 0.75  # TODO: 根据实际高度调整 (~70% of robot height)
+    class constraints( LeggedRobotCfg.rewards ):
+        is_gaussian = True
+        target_head_height = 1
+        target_head_margin = 1
+        orientation_height_threshold = 0.9  # 当机器人站到一定高度后，才开始计算姿态奖励
+        target_base_height = 0.45
+
+        left_foot_displacement_sigma = -2
+        right_foot_displacement_sigma = -2
+        hip_yaw_var_sigma = -2
+        target_dof_pos_sigma = -0.1
+        post_task = False
+        
+        class scales:
+            # regularization reward
+            regu_dof_acc = -2.5e-7
+            regu_action_rate = -0.01
+            regu_smoothness = -0.01
+            regu_torques = -2.5e-6
+            regu_joint_power = -2.5e-5
+            regu_dof_vel = -1e-3
+            regu_joint_tracking_error = -0.00025
+            regu_dof_pos_limits = -100.0
+            regu_dof_vel_limits = -1
+
+            # style reward
+            style_waist_deviation = -10
+            style_hip_yaw_deviation = -10
+            style_hip_roll_deviation = -10
+            style_shoulder_roll_deviation = -2.5
+            style_left_foot_displacement = 2.5
+            style_right_foot_displacement = 2.5
+            style_knee_deviation = -0.25
+            style_shank_orientation = 10
+            style_ground_parallel = 20
+            style_feet_distance = -10
+            style_style_ang_vel_xy = 1
+
+            # post-task reward
+            target_ang_vel_xy = 10
+            target_lin_vel_xy = 10
+            target_feet_height_var = 2.5
+            target_target_upper_dof_pos = 10
+            target_target_orientation = 10
+            target_target_base_height = 10
+
+    class domain_rand:
+        use_random = True
+
+        randomize_actuation_offset = use_random
+        actuation_offset_range = [-0.05, 0.05]
+
+        randomize_motor_strength = use_random
+        motor_strength_range = [0.9, 1.1]
+
+        randomize_payload_mass = use_random
+        payload_mass_range = [-2, 5]
+
+        randomize_com_displacement = use_random
+        com_displacement_range = [-0.03, 0.03]
+
+        randomize_link_mass = use_random
+        link_mass_range = [0.8, 1.2]
+
+        randomize_friction = use_random
+        friction_range = [0.1, 1]
+
+        randomize_restitution = use_random
+        restitution_range = [0.0, 1.0]
+
+        randomize_kp = use_random
+        kp_range = [0.85, 1.15]
+
+        randomize_kd = use_random
+        kd_range = [0.85, 1.15]
+
+        randomize_initial_joint_pos = True
+        initial_joint_pos_scale = [0.9, 1.1]
+        initial_joint_pos_offset = [-0.1, 0.1]
+
+        push_robots = False
+        push_interval_s = 10
+        max_push_vel_xy = 0.5
+
+        delay = use_random
+        max_delay_timesteps = 5
+
+    class curriculum:
         pull_force = True
-        pull_force_value = 200  # TODO: 根据机器人重量调整 (~60% of robot weight)
+        force = 100
+        dof_vel_limit = 300
+        base_vel_limit = 20
+        threshold_height = 0.9
+        no_orientation = False
 
-    class normalization:
-        class obs_scales:
-            lin_vel = 1.0
-            ang_vel = 0.25
-            dof_pos = 1.0
-            dof_vel = 0.05
-            height_measurements = 5.0
+    class sim:
+        dt = 0.005
+        substeps = 1
+        gravity = [0.0, 0.0, -9.81]  # [m/s^2]
+        up_axis = 1  # 0 is y, 1 is z
 
-        clip_observations = 100.
-        clip_actions = 10.
-
+        class physx:
+            num_threads = 10
+            solver_type = 1  # 0: pgs, 1: tgs
+            num_position_iterations = 8
+            num_velocity_iterations = 1
+            contact_offset = 0.01  # [m]
+            rest_offset = 0.0   # [m]
+            bounce_threshold_velocity = 0.5  # 0.5 [m/s]
+            max_depenetration_velocity = 1.0
+            max_gpu_contact_pairs = 2**23  # 2**24 -> needed for 8000 envs and more
+            default_buffer_size_multiplier = 5
+            contact_collection = 2  # 0: never, 1: last sub-step, 2: all sub-steps (default=2)
 
 class BHR8FC2CfgPPO(LeggedRobotCfgPPO):
-    """
-    PPO configuration for BHR8FC2 training.
-    """
-    
-    class algorithm(LeggedRobotCfgPPO.algorithm):
+    runner_class_name = 'OnPolicyRunner'
+    class policy:
+        init_noise_std = 0.8
+        actor_hidden_dims = [512, 256, 128]
+        critic_hidden_dims = [512, 256]
+    class algorithm( LeggedRobotCfgPPO.algorithm ):
         entropy_coef = 0.01
+        # smoothness
+        value_smoothness_coef = 0.1
+        smoothness_upper_bound = 1.0
+        smoothness_lower_bound = 0.1
 
-    class runner(LeggedRobotCfgPPO.runner):
+    class runner( LeggedRobotCfgPPO.runner ):
         run_name = ''
+        save_interval = 500 # check for potential saves every this many iterations
         experiment_name = 'bhr8fc2_ground'
-        max_iterations = 15000
-        save_interval = 500
+        algorithm_class_name = 'PPO'
+        init_at_random_ep_len = True
+        max_iterations = 12000 # number of policy updates
