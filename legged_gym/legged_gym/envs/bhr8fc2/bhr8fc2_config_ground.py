@@ -55,7 +55,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         }
 
     class env(LeggedRobotCfg.env):
-        num_envs = 128  # 先用较小数量调试（原4096太多会卡）
+        num_envs = 512  # 先用较小数量调试（原4096太多会卡）
         num_dofs = 20
         num_actions = 20
         # 单步观测维度 3【基座角速度】 +
@@ -344,4 +344,4 @@ class BHR8FC2CfgPPO(LeggedRobotCfgPPO):
         experiment_name = 'bhr8fc2_ground'
         algorithm_class_name = 'PPO'
         init_at_random_ep_len = True
-        max_iterations = 5000 # number of policy updates
+        max_iterations = 12000 # number of policy updates
