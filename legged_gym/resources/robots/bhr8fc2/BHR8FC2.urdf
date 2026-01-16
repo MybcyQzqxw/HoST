@@ -606,7 +606,7 @@
       </geometry>
     </collision>
   </link>
-  <joint name="head_link_joint" type="fixed">
+  <joint name="head_joint" type="fixed">
     <origin xyz="0.03 0 0.493594020755785" rpy="0 0 0" />
     <parent link="torso_link" />
     <child link="head_link" />

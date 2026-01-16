@@ -160,7 +160,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         ankle_joints = ['left_ankle_pitch_joint', 'left_ankle_roll_joint', 'right_ankle_pitch_joint', 'right_ankle_roll_joint']
 
         keyframe_name = 'keyframe'
-        head_name = 'keyframe_head'
+        head_name = 'head'
 
         trunk_names = ['torso']
         base_name = 'torso_link'
