@@ -290,6 +290,16 @@ class LeggedRobot(BaseTask):
                                 self.action_rescale + (torch.rand_like(self.action_rescale) - 0.5) * 0.05,
                                 ),dim=-1)
         
+        # Debug: Check for NaN in observations
+        if torch.isnan(current_obs).any():
+            print("[DEBUG] NaN detected in current_obs!")
+            print(f"  base_ang_vel has NaN: {torch.isnan(self.base_ang_vel).any()}")
+            print(f"  projected_gravity has NaN: {torch.isnan(self.projected_gravity).any()}")
+            print(f"  dof_pos has NaN: {torch.isnan(self.dof_pos).any()}")
+            print(f"  dof_vel has NaN: {torch.isnan(self.dof_vel).any()}")
+            print(f"  actions has NaN: {torch.isnan(self.actions).any()}")
+            print(f"  action_rescale has NaN: {torch.isnan(self.action_rescale).any()}")
+        
         if self.add_noise:
             current_obs += (2 * torch.rand_like(current_obs) - 1) * self.noise_scale_vec
 
@@ -848,7 +858,9 @@ class LeggedRobot(BaseTask):
             self.keyframe_indices[i] = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], name)
 
         self.head_names = [s for s in body_names if self.cfg.asset.head_name in s]
-        # import ipdb; ipdb.set_trace()
+        print(f"[DEBUG] Looking for head_name='{self.cfg.asset.head_name}' in body_names")
+        print(f"[DEBUG] Found head_names: {self.head_names}")
+        print(f"[DEBUG] All body_names: {body_names}")
         self.head_indices = torch.zeros(len(self.head_names), dtype=torch.long, device=self.device)
         for i, name in enumerate(self.head_names):
             self.head_indices[i] = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], name)
@@ -961,6 +973,8 @@ class LeggedRobot(BaseTask):
             for source_name in body_names:
                 if target_name in source_name and 'keyframe' not in source_name:
                     left_ankle_names.append(source_name)
+        print(f"[DEBUG] Left ankle target names: {self.cfg.asset.left_ankle_names}")
+        print(f"[DEBUG] Found left_ankle_names: {left_ankle_names}")
         self.left_ankle_indices = torch.zeros(len(left_ankle_names), dtype=torch.long, device=self.device)
         self.left_ankle_names = left_ankle_names
         for i, name in enumerate(left_ankle_names):
@@ -971,6 +985,8 @@ class LeggedRobot(BaseTask):
             for source_name in body_names:
                 if target_name in source_name and 'keyframe' not in source_name:
                     right_ankle_names.append(source_name)
+        print(f"[DEBUG] Right ankle target names: {self.cfg.asset.right_ankle_names}")
+        print(f"[DEBUG] Found right_ankle_names: {right_ankle_names}")
         self.right_ankle_indices = torch.zeros(len(right_ankle_names), dtype=torch.long, device=self.device)
         self.right_ankle_names = right_ankle_names
         for i, name in enumerate(right_ankle_names):
@@ -1045,6 +1061,10 @@ class LeggedRobot(BaseTask):
         return reward
 
     def _reward_head_height(self):
+        # 安全检查：如果没有找到head link，返回零奖励
+        if len(self.head_indices) == 0:
+            return torch.zeros(self.num_envs, device=self.device, dtype=torch.float)
+        
         if not self.is_gaussian:
             head_height = self.rigid_body_states[:, self.head_indices, 2].clone()
             return head_height.squeeze(1).clamp(0, 1)
@@ -1167,6 +1187,10 @@ class LeggedRobot(BaseTask):
         return reward 
 
     def _reward_ground_parallel(self):
+        # 安全检查：如果ankle索引为空，返回零奖励
+        if len(self.left_ankle_indices) == 0 or len(self.right_ankle_indices) == 0:
+            return torch.zeros(self.num_envs, device=self.device, dtype=torch.float)
+        
         left_ankle_pos = self.rigid_body_states[:, self.left_ankle_indices, 2].clone() * 10
         right_ankle_pos = self.rigid_body_states[:, self.right_ankle_indices, 2].clone() * 10
         var = left_ankle_pos.var(1) + right_ankle_pos.var(1)
