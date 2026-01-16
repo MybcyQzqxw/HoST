@@ -4,9 +4,9 @@
   </mujoco>
   <link name="torso_link">
     <inertial>
-      <origin xyz="-0.012732 0.001920 0.238652" rpy="0 0 0" />
-      <mass value="22.905686" />
-      <inertia ixx="0.707010" ixy="0.001899" ixz="-0.030535" iyy="0.599485" iyz="0.004709" izz="0.240897" />
+      <origin xyz="-0.013598 0.001904 0.230955" rpy="0 0 0" />
+      <mass value="22.473048" />
+      <inertia ixx="0.640733" ixy="0.001978" ixz="-0.036086" iyy="0.531463" iyz="0.004586" izz="0.240139" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
@@ -583,5 +583,33 @@
     <parent link="left_shoulder_yaw_link" />
     <child link="left_elbow_link" />
     <axis xyz="0 1 0" />
+  </joint>
+  <link name="head_link">
+    <inertial>
+      <origin xyz="-0.020501 0.001926 0.089361" rpy="0 0 0" />
+      <mass value="0.618693" />
+      <inertia ixx="0.001909" ixy="-0.000068" ixz="-0.000359" iyy="0.002331" iyz="0.000041" izz="0.002378" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/head_link.stl" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/head_link.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="head_link_joint" type="fixed">
+    <origin xyz="0.03 0 0.493594020755785" rpy="0 0 0" />
+    <parent link="torso_link" />
+    <child link="head_link" />
+    <axis xyz="0 0 0" />
   </joint>
 </robot>
