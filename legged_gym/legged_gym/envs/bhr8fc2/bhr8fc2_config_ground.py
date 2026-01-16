@@ -208,7 +208,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
 
         class scales:
             task_orientation = 1
-            task_head_height = 1
+            task_head_height = 0  # BHR8FC2没有头部link，禁用头部高度奖励
 
     class constraints( LeggedRobotCfg.rewards ):
         is_gaussian = True
