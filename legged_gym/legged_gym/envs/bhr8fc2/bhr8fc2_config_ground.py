@@ -154,7 +154,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
 
         left_arm_joints = ['left_shoulder_pitch_joint', 'left_shoulder_roll_joint', 'left_shoulder_yaw_joint', 'left_elbow_joint']
         right_arm_joints = ['right_shoulder_pitch_joint', 'right_shoulder_roll_joint', 'right_shoulder_yaw_joint', 'right_elbow_joint']
-        # waist_joints = ['waist_yaw_joint']
+        waist_joints = []  # BHR8FC2 没有腰部关节
         knee_joints = ['left_knee_joint', 'right_knee_joint']
         ankle_joints = ['left_ankle_pitch_joint', 'left_ankle_roll_joint', 'right_ankle_pitch_joint', 'right_ankle_roll_joint']
 
