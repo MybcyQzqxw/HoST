@@ -57,7 +57,12 @@ class BHR8FC2Cfg(LeggedRobotCfg):
     class env(LeggedRobotCfg.env):
         num_dofs = 20
         num_actions = 20
-        # 单步观测维度 3【基座角速度】 + 3【投影重力：机器人坐标系下的重力向量】 + 20【关节位置】 + 20【关节速度】 + 20【上一步动作】 + 1【动作缩放因子】
+        # 单步观测维度 3【基座角速度】 +
+        #            3【投影重力：机器人坐标系下的重力向量】 +
+        #            20【关节位置】 +
+        #            20【关节速度】 +
+        #            20【上一步动作】 +
+        #            1【动作缩放因子】
         num_one_step_observations = 67
         num_actor_history = 6  # 历史观测步数
         num_observations = num_actor_history * num_one_step_observations
@@ -88,26 +93,37 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         decimation = 4
 
     class terrain:
-        mesh_type = 'plane'  # "heightfield" # none, plane, heightfield or trimesh
-        horizontal_scale = 0.1  # [m]
-        vertical_scale = 0.005  # [m]
-        border_size = 25  # [m]
-        curriculum = True
-        static_friction = 0.8
-        dynamic_friction = 0.7
-        restitution = 0.3
-        measure_heights = True
-        measured_points_x = [-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
-        measured_points_y = [-0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5]
+        # 地形类型：'none', 'plane'(无限平面), 'heightfield'(复杂地形), 'trimesh'
+        mesh_type = 'plane'
+
+        # 平面物理属性（这些参数在plane模式下有效）
+        static_friction = 0.8   # 静摩擦系数
+        dynamic_friction = 0.7  # 动摩擦系数
+        restitution = 0.3       # 恢复系数（0=完全非弹性，1=完全弹性碰撞）
+
+        # ========== 以下参数仅在 heightfield/trimesh 模式下生效 ==========
+        curriculum = False  # plane模式下无课程学习
+        horizontal_scale = 0.1  # [m] 水平分辨率
+        vertical_scale = 0.005  # [m] 垂直分辨率
+        border_size = 25  # [m] 地形边界缓冲区
+
+        # 高度测量（用于机器人感知复杂地形）
+        measure_heights = False  # plane模式下不需要测量
+        measured_points_x = [-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+        measured_points_y = [-0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
+
+        # 地形网格配置
         selected = False
         terrain_kwargs = None
-        max_init_terrain_level = 5
-        terrain_length = 8.
-        terrain_width = 8.
-        num_rows = 1
-        num_cols = 20
-        terrain_proportions = [1, 0., 0, 0, 0]
-        slope_treshold = 0.75
+        max_init_terrain_level = 5  # 课程学习初始难度级别
+        terrain_length = 8.0    # 每个地形块长度[m]
+        terrain_width = 8.0     # 每个地形块宽度[m]
+        num_rows = 1            # 地形网格行数（难度级别数）
+        num_cols = 20           # 地形网格列数（地形类型数）
+        terrain_proportions = [1, 0, 0, 0, 0]  # [平滑斜坡, 粗糙斜坡, 台阶, 离散障碍, 随机高度]
+
+        # trimesh专用
+        slope_treshold = 0.75  # 斜坡角度阈值，超过此值修正为垂直面
 
     class asset(LeggedRobotCfg.asset):
         file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/bhr8fc2/BHR8FC2.urdf'
@@ -140,13 +156,14 @@ class BHR8FC2Cfg(LeggedRobotCfg):
 
         left_arm_joints = ['left_shoulder_pitch_joint', 'left_shoulder_roll_joint', 'left_shoulder_yaw_joint', 'left_elbow_joint']
         right_arm_joints = ['right_shoulder_pitch_joint', 'right_shoulder_roll_joint', 'right_shoulder_yaw_joint', 'right_elbow_joint']
+        waist_joints = ['waist_yaw_joint']
         knee_joints = ['left_knee_joint', 'right_knee_joint']
         ankle_joints = ['left_ankle_pitch_joint', 'left_ankle_roll_joint', 'right_ankle_pitch_joint', 'right_ankle_roll_joint']
 
         keyframe_name = 'keyframe'
         head_name = 'keyframe_head'
 
-        trunk_names = ['pelvis', 'torso']
+        trunk_names = ['torso']
         base_name = 'torso_link'
 
         left_upper_body_names = ['left_shoulder_pitch', 'left_elbow']
@@ -157,15 +174,15 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         left_ankle_names = ['left_ankle_roll']
         right_ankle_names = ['right_ankle_roll']
 
-        density = 0.001
-        angular_damping = 0.01
-        linear_damping = 0.01
-        max_angular_velocity = 1000.
-        max_linear_velocity = 1000.
-        armature = 0.01
-        thickness = 0.01
-        self_collisions = 0
-        flip_visual_attachments = False
+        density = 0.001         # 密度 [kg/m^3]
+        angular_damping = 0.01  # 角阻尼
+        linear_damping = 0.01   # 线阻尼
+        max_angular_velocity = 1000.  # 最大角速度 [rad/s]
+        max_linear_velocity = 1000.   # 最大线速度 [m/s]
+        armature = 0.01       # 关节惯量补偿 [kg*m^2]
+        thickness = 0.01      # 碰撞检测厚度 [m]
+        self_collisions = 0   # 0：启用自碰撞，1：禁用自碰撞（可穿透）
+        flip_visual_attachments = False  # 是否翻转视觉附件（根据URDF文件调整）
 
     class rewards(LeggedRobotCfg.rewards):
         soft_dof_pos_limit = 0.9
