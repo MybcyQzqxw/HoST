@@ -28,8 +28,8 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             'right_shoulder_roll_joint': 0.0,
             'left_shoulder_yaw_joint': 0.0,
             'right_shoulder_yaw_joint': 0.0,
-            'left_elbow_joint': -0.5,
-            'right_elbow_joint': 0.5,
+            'left_elbow_joint': -0.2,
+            'right_elbow_joint': 0.2,
         }
 
         default_joint_angles = {
@@ -57,6 +57,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         }
 
     class env(LeggedRobotCfg.env):
+        num_envs = 512
         num_dofs = 20
         num_actions = 20
         # 单步观测维度 3【基座角速度】 +
