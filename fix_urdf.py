@@ -25,32 +25,36 @@ INPUT_URDF = "legged_gym/resources/robots/bhr8fc2/BHR8FC2.urdf"
 OUTPUT_URDF = "legged_gym/resources/robots/bhr8fc2/BHR8FC2.urdf"
 
 # ==================== 关节限制配置 ====================
-# 定义各类关节的标准限制（根据人形机器人的常见限制）
-# 格式: 'joint_keyword': (lower_limit, upper_limit, effort, velocity)
+# 定义各类关节的标准限制（角度制输入，程序自动转换为弧度）
+# 格式: 'joint_keyword': (lower_limit_deg, upper_limit_deg, effort_Nm, velocity_rad/s)
+# 注意：角度用度数(°)，扭矩用牛顿·米(N·m)，速度用弧度/秒(rad/s)
+
+import math
 
 DEFAULT_JOINT_LIMITS = {
     # 腿部关节
-    'hip_yaw': (-1.57, 1.57, 150, 30),      # ±90度
-    'hip_roll': (-0.52, 0.52, 150, 30),     # ±30度  
-    'hip_pitch': (-1.92, 0.87, 200, 30),    # -110度到50度
-    'knee': (0.0, 2.61, 200, 30),           # 0到150度
-    'ankle_pitch': (-0.87, 0.52, 40, 30),   # -50度到30度
-    'ankle_roll': (-0.35, 0.35, 40, 30),    # ±20度
-    
+    'left_hip_yaw': (-22.5, 22.5, 88, 32),
+    'right_hip_yaw': (-22.5, 22.5, 88, 32),
+    'left_hip_roll': (-30, 30, 88, 32),
+    'right_hip_roll': (-30, 30, 88, 32),
+    'left_hip_pitch': (-23, 96, 88, 32),
+    'right_hip_pitch': (-23, 96, 88, 32),
+    'left_knee': (12, 130, 139, 20),
+    'right_knee': (12, 130, 139, 20),
+    'left_ankle_pitch': (-35, 65, 50, 37),
+    'right_ankle_pitch': (-35, 65, 50, 37),
+    'left_ankle_roll': (-20, 20, 50, 37),
+    'right_ankle_roll': (-20, 20, 50, 37),
+
     # 手臂关节
-    'shoulder_pitch': (-2.87, 2.87, 100, 30), # ±165度
-    'shoulder_roll': (-2.87, 2.87, 100, 30),  # ±165度
-    'shoulder_yaw': (-2.87, 2.87, 100, 30),   # ±165度
-    'elbow': (0.0, 2.61, 100, 30),            # 0到150度
-    'wrist_pitch': (-1.57, 1.57, 50, 30),     # ±90度
-    'wrist_yaw': (-1.57, 1.57, 50, 30),       # ±90度
-    
-    # 躯干/头部关节
-    'waist_yaw': (-0.87, 0.87, 100, 30),      # ±50度
-    'waist_pitch': (-0.52, 0.52, 100, 30),    # ±30度
-    'waist_roll': (-0.35, 0.35, 100, 30),     # ±20度
-    'neck_pitch': (-0.52, 0.52, 50, 30),      # ±30度
-    'neck_yaw': (-0.87, 0.87, 50, 30),        # ±50度
+    'left_shoulder_pitch': (-90, 135, 88, 32),
+    'right_shoulder_pitch': (-90, 135, 88, 32),
+    'left_shoulder_roll': (-10, 90, 88, 32),
+    'right_shoulder_roll': (-10, 90, 88, 32),
+    'left_shoulder_yaw': (-45, 45, 88, 32),
+    'right_shoulder_yaw': (-45, 45, 88, 32),
+    'left_elbow': (10, 115, 50, 37),
+    'right_elbow': (10, 115, 50, 37),
 }
 
 # ==================== 核心转换函数 ====================
@@ -139,18 +143,29 @@ def find_joint_limit(joint_name, custom_limits=None):
         custom_limits: 自定义限制字典（可选）
         
     Returns:
-        (lower, upper, effort, velocity) 或 None
+        (lower_rad, upper_rad, effort, velocity) 或 None
+        注意：返回的角度已转换为弧度制
     """
     limits = custom_limits if custom_limits else DEFAULT_JOINT_LIMITS
     
+    limit_tuple = None
+    
     # 优先精确匹配
     if joint_name in limits:
-        return limits[joint_name]
+        limit_tuple = limits[joint_name]
+    else:
+        # 然后关键字匹配
+        for key, limit in limits.items():
+            if key in joint_name:
+                limit_tuple = limit
+                break
     
-    # 然后关键字匹配
-    for key, limit in limits.items():
-        if key in joint_name:
-            return limit
+    if limit_tuple:
+        # 将角度从度数转换为弧度，effort 和 velocity 保持不变
+        lower_deg, upper_deg, effort, velocity = limit_tuple
+        lower_rad = math.radians(lower_deg)
+        upper_rad = math.radians(upper_deg)
+        return (lower_rad, upper_rad, effort, velocity)
     
     return None
 
