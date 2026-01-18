@@ -7,55 +7,56 @@ class BHR8FC2Cfg(LeggedRobotCfg):
     """
     class init_state(LeggedRobotCfg.init_state):
         pos = [0.0, 0.0, 0.5]  # x,y,z [m]
-        rot = [0.0, -1, 0, 1.0]  # x,y,z,w [quat]
+        rot = [0.0, 1.0, 0, 1.0]  # x,y,z,w [quat]
         target_joint_angles = {
             'left_hip_yaw_joint': 0.0,
-            'left_hip_roll_joint': 0.0,
-            'left_hip_pitch_joint': -0.1,
-            'left_knee_joint': 0.3,
-            'left_ankle_pitch_joint': -0.2,
-            'left_ankle_roll_joint': 0.0,
             'right_hip_yaw_joint': 0.0,
+            'left_hip_roll_joint': 0.0,
             'right_hip_roll_joint': 0.0,
-            'right_hip_pitch_joint': -0.1,
-            'right_knee_joint': 0.3,
+            'left_hip_pitch_joint': 0.2,
+            'right_hip_pitch_joint': -0.2,
+            'left_knee_joint': -0.4,
+            'right_knee_joint': 0.4,
+            'left_ankle_pitch_joint': 0.2,
             'right_ankle_pitch_joint': -0.2,
+            'left_ankle_roll_joint': 0.0,
             'right_ankle_roll_joint': 0.0,
+
             'left_shoulder_pitch_joint': 0.0,
-            'left_shoulder_roll_joint': 0.3,
-            'left_shoulder_yaw_joint': 0.0,
-            'left_elbow_joint': 0.0,
             'right_shoulder_pitch_joint': 0.0,
-            'right_shoulder_roll_joint': -0.3,
+            'left_shoulder_roll_joint': 0.0,
+            'right_shoulder_roll_joint': 0.0,
+            'left_shoulder_yaw_joint': 0.0,
             'right_shoulder_yaw_joint': 0.0,
-            'right_elbow_joint': 0.0,
+            'left_elbow_joint': -0.5,
+            'right_elbow_joint': 0.5,
         }
 
         default_joint_angles = {
             'left_hip_yaw_joint': 0.0,
-            'left_hip_roll_joint': 0.0,
-            'left_hip_pitch_joint': -0.1,
-            'left_knee_joint': 0.3,
-            'left_ankle_pitch_joint': -0.2,
-            'left_ankle_roll_joint': 0.0,
             'right_hip_yaw_joint': 0.0,
+            'left_hip_roll_joint': 0.0,
             'right_hip_roll_joint': 0.0,
-            'right_hip_pitch_joint': -0.1,
-            'right_knee_joint': 0.3,
-            'right_ankle_pitch_joint': -0.2,
+            'left_hip_pitch_joint': 0.3,
+            'right_hip_pitch_joint': -0.3,
+            'left_knee_joint': -0.6,
+            'right_knee_joint': 0.6,
+            'left_ankle_pitch_joint': 0.3,
+            'right_ankle_pitch_joint': -0.3,
+            'left_ankle_roll_joint': 0.0,
             'right_ankle_roll_joint': 0.0,
+
             'left_shoulder_pitch_joint': 0.0,
-            'left_shoulder_roll_joint': 0.0,
-            'left_shoulder_yaw_joint': 0.0,
-            'left_elbow_joint': 0.8,
             'right_shoulder_pitch_joint': 0.0,
+            'left_shoulder_roll_joint': 0.0,
             'right_shoulder_roll_joint': 0.0,
+            'left_shoulder_yaw_joint': 0.0,
             'right_shoulder_yaw_joint': 0.0,
+            'left_elbow_joint': -0.8,
             'right_elbow_joint': 0.8,
         }
 
     class env(LeggedRobotCfg.env):
-        num_envs = 512  # 先用较小数量调试（原4096太多会卡）
         num_dofs = 20
         num_actions = 20
         # 单步观测维度 3【基座角速度】 +
@@ -300,7 +301,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
 
     class curriculum:
         pull_force = True
-        force = 100
+        force = 200
         dof_vel_limit = 300
         base_vel_limit = 20
         threshold_height = 0.9

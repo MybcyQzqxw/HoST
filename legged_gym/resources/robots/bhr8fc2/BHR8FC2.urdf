@@ -51,7 +51,7 @@
     <parent link="torso_link" />
     <child link="right_hip_yaw_link" />
     <axis xyz="0 0 1" />
-    <limit lower="-0.39269908169872414" upper="0.39269908169872414" effort="88" velocity="32"/>
+    <limit lower="-0.3490658503988659" upper="0.3490658503988659" effort="88" velocity="32"/>
   </joint>
   <link name="right_hip_roll_link">
     <inertial>
@@ -109,7 +109,7 @@
     <parent link="right_hip_roll_link" />
     <child link="right_hip_pitch_link" />
     <axis xyz="0 1 0" />
-    <limit lower="-0.4014257279586958" upper="1.6755160819145565" effort="88" velocity="32"/>
+    <limit lower="-1.6755160819145565" upper="0.4014257279586958" effort="88" velocity="32"/>
   </joint>
   <link name="right_knee_link">
     <inertial>
@@ -167,7 +167,7 @@
     <parent link="right_knee_link" />
     <child link="right_ankle_pitch_link" />
     <axis xyz="0 1 0" />
-    <limit lower="-0.6108652381980153" upper="1.1344640137963142" effort="50" velocity="37"/>
+    <limit lower="-1.1344640137963142" upper="0.6108652381980153" effort="50" velocity="37"/>
   </joint>
   <link name="right_ankle_roll_link">
     <inertial>
@@ -225,7 +225,7 @@
     <parent link="torso_link" />
     <child link="left_hip_yaw_link" />
     <axis xyz="0 0 1" />
-    <limit lower="-0.39269908169872414" upper="0.39269908169872414" effort="88" velocity="32"/>
+    <limit lower="-0.3490658503988659" upper="0.3490658503988659" effort="88" velocity="32"/>
   </joint>
   <link name="left_hip_roll_link">
     <inertial>
@@ -312,7 +312,7 @@
     <parent link="left_hip_pitch_link" />
     <child link="left_knee_link" />
     <axis xyz="0 -1 0" />
-    <limit lower="0.20943951023931956" upper="2.2689280275926285" effort="139" velocity="20"/>
+    <limit lower="-2.2689280275926285" upper="-0.20943951023931956" effort="139" velocity="20"/>
   </joint>
   <link name="left_ankle_pitch_link">
     <inertial>
@@ -428,7 +428,7 @@
     <parent link="right_shoulder_pitch_link" />
     <child link="right_shoulder_roll_link" />
     <axis xyz="1 0 0" />
-    <limit lower="-0.17453292519943295" upper="1.5707963267948966" effort="88" velocity="32"/>
+    <limit lower="-1.5707963267948966" upper="0.17453292519943295" effort="88" velocity="32"/>
   </joint>
   <link name="right_shoulder_yaw_link">
     <inertial>
@@ -457,7 +457,7 @@
     <parent link="right_shoulder_roll_link" />
     <child link="right_shoulder_yaw_link" />
     <axis xyz="0 0 1" />
-    <limit lower="-0.7853981633974483" upper="0.7853981633974483" effort="88" velocity="32"/>
+    <limit lower="-1.5707963267948966" upper="0.7853981633974483" effort="88" velocity="32"/>
   </joint>
   <link name="right_elbow_link">
     <inertial>
@@ -515,7 +515,7 @@
     <parent link="torso_link" />
     <child link="left_shoulder_pitch_link" />
     <axis xyz="0 1 0" />
-    <limit lower="-1.5707963267948966" upper="2.356194490192345" effort="88" velocity="32"/>
+    <limit lower="-2.356194490192345" upper="1.5707963267948966" effort="88" velocity="32"/>
   </joint>
   <link name="left_shoulder_roll_link">
     <inertial>
@@ -573,7 +573,7 @@
     <parent link="left_shoulder_roll_link" />
     <child link="left_shoulder_yaw_link" />
     <axis xyz="0 0 1" />
-    <limit lower="-0.7853981633974483" upper="0.7853981633974483" effort="88" velocity="32"/>
+    <limit lower="-0.7853981633974483" upper="1.5707963267948966" effort="88" velocity="32"/>
   </joint>
   <link name="left_elbow_link">
     <inertial>
@@ -602,7 +602,7 @@
     <parent link="left_shoulder_yaw_link" />
     <child link="left_elbow_link" />
     <axis xyz="0 1 0" />
-    <limit lower="0.17453292519943295" upper="2.007128639793479" effort="50" velocity="37"/>
+    <limit lower="-2.007128639793479" upper="-0.17453292519943295" effort="50" velocity="37"/>
   </joint>
   <link name="head_link">
     <inertial>
