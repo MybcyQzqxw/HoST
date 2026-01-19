@@ -302,7 +302,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
 
     class curriculum:
         pull_force = True
-        force = 200
+        force = 300
         dof_vel_limit = 300
         base_vel_limit = 20
         threshold_height = 0.9
@@ -346,4 +346,4 @@ class BHR8FC2CfgPPO(LeggedRobotCfgPPO):
         experiment_name = 'bhr8fc2_ground'
         algorithm_class_name = 'PPO'
         init_at_random_ep_len = True
-        max_iterations = 12000 # number of policy updates
+        max_iterations = 20000 # number of policy updates
