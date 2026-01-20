@@ -1193,8 +1193,9 @@ class LeggedRobot(BaseTask):
         
         left_ankle_pos = self.rigid_body_states[:, self.left_ankle_indices, 2].clone() * 10
         right_ankle_pos = self.rigid_body_states[:, self.right_ankle_indices, 2].clone() * 10
-        var = left_ankle_pos.var(1) + right_ankle_pos.var(1)
-        var = torch.mean(torch.concat([left_ankle_pos.var(1).view(-1, 1), right_ankle_pos.var(1).view(-1, 1)], dim=-1), dim=-1)
+        # 使用 unbiased=False 避免单元素方差计算时自由度为0的警告
+        var = left_ankle_pos.var(1, unbiased=False) + right_ankle_pos.var(1, unbiased=False)
+        var = torch.mean(torch.concat([left_ankle_pos.var(1, unbiased=False).view(-1, 1), right_ankle_pos.var(1, unbiased=False).view(-1, 1)], dim=-1), dim=-1)
         reward = var < 0.05
 
         if self.cfg.constraints.post_task:
