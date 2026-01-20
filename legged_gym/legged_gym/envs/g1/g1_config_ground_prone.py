@@ -138,8 +138,6 @@ class G1Cfg( LeggedRobotCfg ):
         foot_name = "ankle_roll"
         penalize_contacts_on = ["elbow", 'shoulder', 'waist', 'knee', 'hip']
         terminate_after_contacts_on = []    #'torse'
-        self_collisions = 0 # 1 to disable, 0 to enable...bitwise filter
-        flip_visual_attachments = False
 
         left_shoulder_name = "left_shoulder"
         right_shoulder_name = "right_shoulder"
@@ -150,17 +148,16 @@ class G1Cfg( LeggedRobotCfg ):
         right_hip_joints = ['right_hip_yaw_joint']
 
         left_hip_roll_joints = ['left_hip_roll_joint']
-        right_hip_roll_joints = ['right_hip_roll_joint']    
+        right_hip_roll_joints = ['right_hip_roll_joint']
 
         left_hip_pitch_joints = ['left_hip_pitch_joint']
-        right_hip_pitch_joints = ['right_hip_pitch_joint']    
+        right_hip_pitch_joints = ['right_hip_pitch_joint']
 
         left_shoulder_roll_joints = ['left_shoulder_roll_joint']
-        right_shoulder_roll_joints = ['right_shoulder_roll_joint']    
-
+        right_shoulder_roll_joints = ['right_shoulder_roll_joint']
 
         left_knee_joints = ['left_knee_joint']
-        right_knee_joints = ['right_knee_joint']    
+        right_knee_joints = ['right_knee_joint']
 
         left_arm_joints = ['left_shoulder_pitch_joint', 'left_shoulder_roll_joint', 'left_shoulder_yaw_joint', 'left_elbow_joint', 'left_wrist_roll_joint']
         right_arm_joints = ['right_shoulder_pitch_joint', 'right_shoulder_roll_joint', 'right_shoulder_yaw_joint', 'right_elbow_joint', 'right_wrist_roll_joint']
@@ -191,6 +188,8 @@ class G1Cfg( LeggedRobotCfg ):
         max_linear_velocity = 1000.0
         armature = 0.01
         thickness = 0.01
+        self_collisions = 0   # 0：启用自碰撞，1：禁用自碰撞（可穿透）
+        flip_visual_attachments = False  # 是否翻转视觉附件（根据URDF文件调整）
 
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9

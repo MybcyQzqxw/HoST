@@ -131,6 +131,8 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         right_foot_name = 'right_ankle_pitch'
         left_knee_name = 'left_knee'
         right_knee_name = 'right_knee'
+        left_thigh_name = 'left_hip_pitch'
+        right_thigh_name = 'right_hip_pitch'
         foot_name = 'ankle_roll'
         penalize_contacts_on = ['elbow', 'shoulder', 'knee', 'hip']
         terminate_after_contacts_on = []
