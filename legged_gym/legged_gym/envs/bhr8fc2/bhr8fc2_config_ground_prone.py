@@ -191,11 +191,11 @@ class BHR8FC2Cfg(LeggedRobotCfg):
 
     class rewards(LeggedRobotCfg.rewards):
         base_height_target = 0.8  # 【调整】目标质心高度
-        target_head_height = 1  # 【调整】目标头部高度
-        target_head_margin = 1
-        target_base_height_phase1 = 0.45
-        target_base_height_phase2 = 0.45
-        target_base_height_phase3 = 0.65
+        target_head_height = 1.4  # 【调整】目标头部高度
+        target_head_margin = 1.4  # 目标头部高度容差范围
+        target_base_height_phase1 = 0.55
+        target_base_height_phase2 = 0.55
+        target_base_height_phase3 = 0.75
 
         base_height_sigma = 0.25
         tracking_dof_sigma = 0.25
@@ -222,10 +222,10 @@ class BHR8FC2Cfg(LeggedRobotCfg):
 
     class constraints( LeggedRobotCfg.rewards ):
         is_gaussian = True
-        target_head_height = 1
-        target_head_margin = 1
+        target_head_height = 1.4
+        target_head_margin = 1.4
         orientation_height_threshold = 0.9
-        target_base_height = 0.45
+        target_base_height = 0.55
 
         left_foot_displacement_sigma = -2
         right_foot_displacement_sigma = -2
@@ -310,7 +310,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
 
     class curriculum:
         pull_force = True
-        force = 300
+        force = 350
         dof_vel_limit = 300
         base_vel_limit = 20
         threshold_height = 0.9
