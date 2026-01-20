@@ -345,4 +345,4 @@ class BHR8FC2CfgPPO(LeggedRobotCfgPPO):
         experiment_name = 'bhr8fc2_ground'
         algorithm_class_name = 'PPO'
         init_at_random_ep_len = True
-        max_iterations = 50000  # number of policy updates
+        max_iterations = 12000  # number of policy updates
