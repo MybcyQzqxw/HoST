@@ -146,6 +146,8 @@ python legged_gym/scripts/train.py --task g1_ground --run_name test_g1
 
 python legged_gym/scripts/train.py --task bhr8fc2_ground --run_name test_bhr8fc2
 
+python legged_gym/scripts/train.py --task bhr8fc2_ground_prone --run_name test_bhr8fc2
+
 # 平台训练
 python legged_gym/scripts/train.py --task g1_platform --run_name test_g1
 
