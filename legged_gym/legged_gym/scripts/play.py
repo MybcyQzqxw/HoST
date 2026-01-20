@@ -1,4 +1,7 @@
 import sys
+import warnings
+warnings.filterwarnings("ignore", message="torch.meshgrid")
+
 from legged_gym import LEGGED_GYM_ROOT_DIR
 import os
 

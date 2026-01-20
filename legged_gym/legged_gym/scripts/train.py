@@ -2,6 +2,8 @@ import os
 import numpy as np
 from datetime import datetime
 import sys
+import warnings
+warnings.filterwarnings("ignore", message="torch.meshgrid")
 
 import isaacgym
 from legged_gym.envs import *
