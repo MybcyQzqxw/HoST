@@ -165,6 +165,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
 
         trunk_names = ['torso']
         base_name = 'torso_link'
+        tracking_body_names = []
 
         left_upper_body_names = ['left_shoulder_pitch', 'left_elbow']
         right_upper_body_names = ['right_shoulder_pitch', 'right_elbow']

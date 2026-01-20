@@ -171,7 +171,7 @@ class G1Cfg( LeggedRobotCfg ):
 
         trunk_names = ["pelvis", "torso"]
         base_name = 'torso_link'
-        tracking_body_names =  ['pelvis']
+        tracking_body_names = ['pelvis']
 
         left_upper_body_names = ['left_shoulder_pitch', 'left_elbow']
         right_upper_body_names = ['right_shoulder_pitch', 'right_elbow']
