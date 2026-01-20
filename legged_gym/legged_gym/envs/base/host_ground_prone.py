@@ -78,7 +78,7 @@ class LeggedRobot(BaseTask):
         self._prepare_reward_function()
         self.init_done = True
         self.unactuated_time = self.cfg.env.unactuated_timesteps
-        self.unactuated_time *= 0.02 / self.dt
+        self.unactuated_time *= 0.02 / self.dt  # 保证实际时间一致
         self.is_gaussian = cfg.rewards.is_gaussian
 
     def step(self, actions):
@@ -100,7 +100,7 @@ class LeggedRobot(BaseTask):
             if self.cfg.env.test:
                 elapsed_time = self.gym.get_elapsed_time(self.sim)
                 sim_time = self.gym.get_sim_time(self.sim)
-                if sim_time-elapsed_time>0:
+                if sim_time-elapsed_time > 0:
                     time.sleep(sim_time-elapsed_time)
             
             if self.cfg.curriculum.pull_force:

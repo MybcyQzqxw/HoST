@@ -168,6 +168,10 @@ python legged_gym/scripts/play.py --task g1_${terrain} --checkpoint_path ${/path
 # 地面环境回放
 python legged_gym/scripts/play.py --task g1_ground --checkpoint_path /path/to/ckpt.pt
 
+python legged_gym/scripts/play.py --task bhr8fc2_ground --checkpoint_path /path/to/ckpt.pt
+
+python legged_gym/scripts/play.py --task bhr8fc2_ground_prone --checkpoint_path /path/to/ckpt.pt
+
 # 平台环境回放
 python legged_gym/scripts/play.py --task g1_platform --checkpoint_path /path/to/ckpt.pt
 

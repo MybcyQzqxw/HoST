@@ -5,7 +5,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
     class init_state(LeggedRobotCfg.init_state):
         pos = [0.0, 0.0, 0.4]  # x,y,z [m]
         rot = [0.0, -1.0, 0, 1.0]  # x,y,z,w [quat]
-        target_joint_angles = {
+        default_joint_angles = {
             'left_hip_yaw_joint': 0.0,
             'right_hip_yaw_joint': 0.0,
             'left_hip_roll_joint': 0.0,
@@ -28,8 +28,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             'left_elbow_joint': -0.2,
             'right_elbow_joint': 0.2,
         }
-
-        default_joint_angles = {
+        target_joint_angles = {
             'left_hip_yaw_joint': 0.0,
             'right_hip_yaw_joint': 0.0,
             'left_hip_roll_joint': 0.0,

@@ -5,7 +5,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
     class init_state(LeggedRobotCfg.init_state):
         pos = [0.0, 0.0, 0.4]  # x,y,z [m]
         rot = [0.0, 1.0, 0, 1.0]  # x,y,z,w [quat]
-        target_joint_angles = {
+        default_joint_angles = {
             'left_hip_yaw_joint': 0.0,
             'right_hip_yaw_joint': 0.0,
             'left_hip_roll_joint': 0.0,
@@ -28,8 +28,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             'left_elbow_joint': -0.2,
             'right_elbow_joint': 0.2,
         }
-
-        default_joint_angles = {
+        target_joint_angles = {
             'left_hip_yaw_joint': 0.0,
             'right_hip_yaw_joint': 0.0,
             'left_hip_roll_joint': 0.0,
@@ -75,14 +74,14 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         stiffness = {
             'hip': 150,
             'knee': 200,
-            'ankle': 40,
-            'shoulder': 100,
-            'elbow': 100,
+            'ankle': 150,
+            'shoulder': 150,
+            'elbow': 150,
         }  # [N*m/rad]
         damping = {
             'hip': 4,
-            'knee': 6,
-            'ankle': 2,
+            'knee': 4,
+            'ankle': 4,
             'shoulder': 4,
             'elbow': 4,
         }  # [N*m*s/rad]
@@ -95,25 +94,30 @@ class BHR8FC2Cfg(LeggedRobotCfg):
     class terrain:
         # 地形类型：'none', 'plane'(无限平面), 'heightfield'(复杂地形), 'trimesh'
         mesh_type = 'plane'
-        horizontal_scale = 0.1  # [m] 水平分辨率
-        vertical_scale = 0.005  # [m] 垂直分辨率
-        border_size = 25  # [m] 地形边界缓冲区
-        curriculum = True
         static_friction = 0.8   # 静摩擦系数
         dynamic_friction = 0.7  # 动摩擦系数
         restitution = 0.3       # 恢复系数（0=完全非弹性，1=完全弹性碰撞）
 
         # ========== 以下参数仅在 heightfield/trimesh 模式下生效 ==========
 
-        # 高度测量（用于机器人感知复杂地形）
-        measure_heights = True
-        measured_points_x = [-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
-        measured_points_y = [-0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
-
-        # 地形网格配置
+        horizontal_scale = 0.1  # [m] 水平分辨率
+        vertical_scale = 0.005  # [m] 垂直分辨率
+        border_size = 25  # [m] 地形边界缓冲区
+        # 控制地形生成的逻辑：
+        # if cfg.curriculum:
+        #     self.curiculum()           # 按难度递增排列
+        # elif cfg.selected:
+        #     self.selected_terrain()    # 使用指定的单一地形类型
+        # else:
+        #     self.randomized_terrain()  # 随机排列
+        # 是否启用地形课程学习
+        # True：地形按难度排列，效果是仅允许把机器人初始放置在简单难度地形
+        # False：地形随机排列，效果是允许把机器人初始放置在任意难度地形
+        curriculum = True
+        # 是否使用指定的单一地形类型
         selected = False
-        terrain_kwargs = None
-        max_init_terrain_level = 5  # 课程学习初始难度级别
+        terrain_kwargs = None  # selected 为 True 时使用的地形参数
+        max_init_terrain_level = 5  # 课程学习初始难度级别 0-5
         terrain_length = 8.0    # 每个地形块长度[m]
         terrain_width = 8.0     # 每个地形块宽度[m]
         num_rows = 1            # 地形网格行数（难度级别数）

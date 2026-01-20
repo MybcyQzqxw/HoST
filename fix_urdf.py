@@ -33,28 +33,28 @@ import math
 
 DEFAULT_JOINT_LIMITS = {
     # 腿部关节
-    'left_hip_yaw': (-20, 20, 145, 32),
-    'right_hip_yaw': (-20, 20, 145, 32),
-    'left_hip_roll': (-30, 30, 145, 32),
-    'right_hip_roll': (-30, 30, 145, 32),
-    'left_hip_pitch': (-23, 96, 145, 32),
-    'right_hip_pitch': (-96, 23, 145, 32),
-    'left_knee': (-130, -12, 145, 32),
-    'right_knee': (12, 130, 145, 32),
-    'left_ankle_pitch': (-35, 65, 145, 32),
-    'right_ankle_pitch': (-65, 35, 145, 32),
-    'left_ankle_roll': (-20, 20, 145, 32),
-    'right_ankle_roll': (-20, 20, 145, 32),
+    'left_hip_yaw': (-20, 20, 120, 20),
+    'right_hip_yaw': (-20, 20, 120, 20),
+    'left_hip_roll': (-30, 30, 120, 20),
+    'right_hip_roll': (-30, 30, 120, 20),
+    'left_hip_pitch': (-23, 96, 120, 20),
+    'right_hip_pitch': (-96, 23, 120, 20),
+    'left_knee': (-130, -12, 150, 20),
+    'right_knee': (12, 130, 150, 20),
+    'left_ankle_pitch': (-35, 65, 120, 20),
+    'right_ankle_pitch': (-65, 35, 120, 20),
+    'left_ankle_roll': (-20, 20, 80, 20),
+    'right_ankle_roll': (-20, 20, 80, 20),
 
     # 手臂关节
-    'left_shoulder_pitch': (-135, 90, 145, 32),
-    'right_shoulder_pitch': (-90, 135, 145, 32),
-    'left_shoulder_roll': (-10, 90, 145, 32),
-    'right_shoulder_roll': (-90, 10, 145, 32),
-    'left_shoulder_yaw': (-45, 90, 145, 32),
-    'right_shoulder_yaw': (-90, 45, 145, 32),
-    'left_elbow': (-115, -10, 145, 32),
-    'right_elbow': (10, 115, 145, 32),
+    'left_shoulder_pitch': (-135, 90, 120, 20),
+    'right_shoulder_pitch': (-90, 135, 120, 20),
+    'left_shoulder_roll': (-10, 90, 120, 20),
+    'right_shoulder_roll': (-90, 10, 120, 20),
+    'left_shoulder_yaw': (-45, 90, 120, 20),
+    'right_shoulder_yaw': (-90, 45, 120, 20),
+    'left_elbow': (-115, -10, 120, 20),
+    'right_elbow': (10, 115, 120, 20),
 }
 
 # ==================== 核心转换函数 ====================
