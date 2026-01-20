@@ -190,7 +190,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         flip_visual_attachments = False  # 是否翻转视觉附件（根据URDF文件调整）
 
     class rewards(LeggedRobotCfg.rewards):
-        base_height_target = 0.7  # 【调整】目标质心高度
+        base_height_target = 0.8  # 【调整】目标质心高度
         target_head_height = 1  # 【调整】目标头部高度
         target_head_margin = 1
         target_base_height_phase1 = 0.45
