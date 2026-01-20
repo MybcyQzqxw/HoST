@@ -53,7 +53,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         }
 
     class env(LeggedRobotCfg.env):
-        num_envs = 512
+        # num_envs = 512
         num_dofs = 20
         num_actions = 20
         # 单步观测维度 3【基座角速度】 +
