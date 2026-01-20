@@ -30,6 +30,8 @@ from legged_gym.envs.pi.pi_host_ground import LeggedRobot_Pi
 
 from legged_gym.envs.bhr8fc2.bhr8fc2_config_ground import BHR8FC2Cfg as BHR8FC2CfgGround
 from legged_gym.envs.bhr8fc2.bhr8fc2_config_ground import BHR8FC2CfgPPO as BHR8FC2CfgPPOGround
+from legged_gym.envs.bhr8fc2.bhr8fc2_config_ground_prone import BHR8FC2Cfg as BHR8FC2CfgGroundProne
+from legged_gym.envs.bhr8fc2.bhr8fc2_config_ground_prone import BHR8FC2CfgPPO as BHR8FC2CfgPPOGroundProne
 
 task_registry.register( "g1_ground", LeggedRobotGround, G1CfgGround(), G1CfgPPOGround())
 task_registry.register( "g1_platform", LeggedRobotPlatform, G1CfgPlatform(), G1CfgPPOPlatform())
@@ -40,3 +42,4 @@ task_registry.register( "h1_ground", LeggedRobotGround, H1CfgGround(), H1CfgPPOG
 
 task_registry.register( "pi_ground", LeggedRobot_Pi, PiCfgGround(), PiCfgPPOGround())
 task_registry.register( "bhr8fc2_ground", LeggedRobotGround, BHR8FC2CfgGround(), BHR8FC2CfgPPOGround())
+task_registry.register( "bhr8fc2_ground_prone", LeggedRobotGroundProne, BHR8FC2CfgGroundProne(), BHR8FC2CfgPPOGroundProne())
