@@ -63,13 +63,13 @@ class G1Cfg( LeggedRobotCfg ):
         }
 
     class env(LeggedRobotCfg.env):
-        num_one_step_observations=  76 #+ 3 * 2#+ 3 * 11  # +3*11 actions / -3 commands  i
-        num_actions = 23#+ 2# + 11
+        num_one_step_observations = 76
+        num_actions = 23
         num_dofs = 23
-        num_actor_history = 6
+        num_actor_history = 6  # 历史观测步数
         num_observations = num_actor_history * num_one_step_observations
-        episode_length_s = 10 # episode length in seconds
-        unactuated_timesteps = 30
+        episode_length_s = 10  # 每个episode的时长（秒）
+        unactuated_timesteps = 30  # 环境启动后无动作控制的时间步数（用于稳定初始状态）
 
     class control( LeggedRobotCfg.control ):
         # PD Drive parameters:
@@ -96,29 +96,35 @@ class G1Cfg( LeggedRobotCfg ):
         decimation = 4
 
     class terrain:
-        mesh_type = 'plane' # "heightfield" # none, plane, heightfield or trimesh
-        horizontal_scale = 0.1 # [m]
-        vertical_scale = 0.005 # [m]
-        border_size = 25 # [m]
+        # 地形类型：'none', 'plane'(无限平面), 'heightfield'(复杂地形), 'trimesh'
+        mesh_type = 'plane'
+        horizontal_scale = 0.1  # [m] 水平分辨率
+        vertical_scale = 0.005  # [m] 垂直分辨率
+        border_size = 25  # [m] 地形边界缓冲区
         curriculum = True
-        static_friction = 0.8
-        dynamic_friction = 0.7
-        restitution = 0.3
-        # rough terrain only:
+        static_friction = 0.8   # 静摩擦系数
+        dynamic_friction = 0.7  # 动摩擦系数
+        restitution = 0.3       # 恢复系数（0=完全非弹性，1=完全弹性碰撞）
+
+        # ========== 以下参数仅在 heightfield/trimesh 模式下生效 ==========
+
+        # 高度测量（用于机器人感知复杂地形）
         measure_heights = True
-        measured_points_x = [-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8] # 1mx1.6m rectangle (without center line)
-        measured_points_y = [-0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5]
-        selected = False # select a unique terrain type and pass all arguments
-        terrain_kwargs = None # Dict of arguments for selected terrain
-        max_init_terrain_level = 5 # starting curriculum state
-        terrain_length = 8.
-        terrain_width = 8.
-        num_rows = 1 # number of terrain rows (levels)
-        num_cols = 20 # number of terrain cols (types)
-        # terrain types: [smooth slope, rough slope, stairs up, stairs down, discrete]
-        terrain_proportions = [1, 0., 0, 0, 0]
-        # trimesh only:
-        slope_treshold = 0.75 # slopes above this threshold will be corrected to vertical surfaces
+        measured_points_x = [-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+        measured_points_y = [-0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
+
+        # 地形网格配置
+        selected = False
+        terrain_kwargs = None
+        max_init_terrain_level = 5  # 课程学习初始难度级别
+        terrain_length = 8.0    # 每个地形块长度[m]
+        terrain_width = 8.0     # 每个地形块宽度[m]
+        num_rows = 1            # 地形网格行数（难度级别数）
+        num_cols = 20           # 地形网格列数（地形类型数）
+        terrain_proportions = [1, 0, 0, 0, 0]  # [平滑斜坡, 粗糙斜坡, 台阶, 离散障碍, 随机高度]
+
+        # trimesh专用
+        slope_treshold = 0.75  # 斜坡角度阈值，超过此值修正为垂直面
 
     class asset( LeggedRobotCfg.asset ):
         file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/g1/g1_23dof.urdf'
@@ -181,8 +187,8 @@ class G1Cfg( LeggedRobotCfg ):
         density = 0.001
         angular_damping = 0.01
         linear_damping = 0.01
-        max_angular_velocity = 1000.
-        max_linear_velocity = 1000.
+        max_angular_velocity = 1000.0
+        max_linear_velocity = 1000.0
         armature = 0.01
         thickness = 0.01
 
@@ -192,7 +198,7 @@ class G1Cfg( LeggedRobotCfg ):
         base_height_target = 0.75
         base_height_sigma = 0.25
         tracking_dof_sigma = 0.25
-        only_positive_rewards = False # if true negative total rewards are clipped at zero (avoids early termination problems)
+        only_positive_rewards = False  # if true negative total rewards are clipped at zero (avoids early termination problems)
         orientation_sigma = 1
         is_gaussian = True
         target_head_height = 1
@@ -204,7 +210,7 @@ class G1Cfg( LeggedRobotCfg ):
         left_foot_displacement_sigma = -2
         right_foot_displacement_sigma = -2
         target_dof_pos_sigma = -0.1
-        tracking_sigma = 0.25 # tracking reward = exp(-error^2/sigma)
+        tracking_sigma = 0.25  # tracking reward = exp(-error^2/sigma)
 
         reward_groups = ['task', 'regu', 'style', 'target']
         num_reward_groups = len(reward_groups)
@@ -226,18 +232,18 @@ class G1Cfg( LeggedRobotCfg ):
         hip_yaw_var_sigma = -2
         target_dof_pos_sigma = -0.1
         post_task = False
-        
+
         class scales:
             # regularization reward
             regu_dof_acc = -2.5e-7
             regu_action_rate = -0.01
-            regu_smoothness = -0.01 
+            regu_smoothness = -0.01
             regu_torques = -2.5e-6
             regu_joint_power = -2.5e-5
             regu_dof_vel = -1e-3
             regu_joint_tracking_error = -0.00025
             regu_dof_pos_limits = -100.0
-            regu_dof_vel_limits = -1 #0.0
+            regu_dof_vel_limits = -1
 
             # style reward
             style_waist_deviation = -10
@@ -279,23 +285,23 @@ class G1Cfg( LeggedRobotCfg ):
 
         randomize_link_mass = use_random
         link_mass_range = [0.8, 1.2]
-        
+
         randomize_friction = use_random
         friction_range = [0.1, 1]
-        
+
         randomize_restitution = use_random
         restitution_range = [0.0, 1.0]
-        
+
         randomize_kp = use_random
-        kp_range = [0.85, 1.25]
-        
+        kp_range = [0.85, 1.15]
+
         randomize_kd = use_random
-        kd_range = [0.85, 1.25]
-        
+        kd_range = [0.85, 1.15]
+
         randomize_initial_joint_pos = True
         initial_joint_pos_scale = [0.9, 1.1]
         initial_joint_pos_offset = [-0.1, 0.1]
-        
+
         push_robots = False
         push_interval_s = 10
         max_push_vel_xy = 0.5
@@ -312,9 +318,9 @@ class G1Cfg( LeggedRobotCfg ):
         no_orientation = True
 
     class sim:
-        dt =  0.005
+        dt = 0.005
         substeps = 1
-        gravity = [0., 0. ,-9.81]  # [m/s^2]
+        gravity = [0.0, 0.0, -9.81]  # [m/s^2]
         up_axis = 1  # 0 is y, 1 is z
 
         class physx:
@@ -324,30 +330,32 @@ class G1Cfg( LeggedRobotCfg ):
             num_velocity_iterations = 1
             contact_offset = 0.01  # [m]
             rest_offset = 0.0   # [m]
-            bounce_threshold_velocity = 0.5 #0.5 [m/s]
+            bounce_threshold_velocity = 0.5  # 0.5 [m/s]
             max_depenetration_velocity = 1.0
-            max_gpu_contact_pairs = 2**23 #2**24 -> needed for 8000 envs and more
+            max_gpu_contact_pairs = 2**23  # 2**24 -> needed for 8000 envs and more
             default_buffer_size_multiplier = 5
-            contact_collection = 2 # 0: never, 1: last sub-step, 2: all sub-steps (default=2)
+            contact_collection = 2  # 0: never, 1: last sub-step, 2: all sub-steps (default=2)
 
 
 class G1CfgPPO( LeggedRobotCfgPPO ):
     runner_class_name = 'OnPolicyRunner'
+
     class policy:
         init_noise_std = 0.8
         actor_hidden_dims = [512, 256, 128]
         critic_hidden_dims = [512, 256]
+
     class algorithm( LeggedRobotCfgPPO.algorithm ):
         entropy_coef = 0.01
         # smoothness
         value_smoothness_coef = 0.1
         smoothness_upper_bound = 1.0
         smoothness_lower_bound = 0.1
-    
+
     class runner( LeggedRobotCfgPPO.runner ):
         run_name = ''
-        save_interval = 500 # check for potential saves every this many iterations
+        save_interval = 500  # check for potential saves every this many iterations
         experiment_name = 'g1_ground_prone'
         algorithm_class_name = 'PPO'
         init_at_random_ep_len = True
-        max_iterations = 12000 # number of policy updates
+        max_iterations = 12000  # number of policy updates

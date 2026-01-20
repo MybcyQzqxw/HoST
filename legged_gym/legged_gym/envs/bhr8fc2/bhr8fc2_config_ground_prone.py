@@ -2,12 +2,9 @@ from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobot
 
 
 class BHR8FC2Cfg(LeggedRobotCfg):
-    """
-    Configuration for BHR8FC2 humanoid robot on ground terrain.
-    """
     class init_state(LeggedRobotCfg.init_state):
-        pos = [0.0, 0.0, 0.5]  # x,y,z [m]
-        rot = [0.0, -1.0, 0, 1.0]  # x,y,z,w [quat]
+        pos = [0.0, 0.0, 0.4]  # x,y,z [m]
+        rot = [0.0, 1.0, 0, 1.0]  # x,y,z,w [quat]
         target_joint_angles = {
             'left_hip_yaw_joint': 0.0,
             'right_hip_yaw_joint': 0.0,
@@ -73,7 +70,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         unactuated_timesteps = 30  # 环境启动后无动作控制的时间步数（用于稳定初始状态）
 
     class control(LeggedRobotCfg.control):
-        # PD Drive parameters (根据BHR8FC2实际参数调整)
+        # PD Drive parameters
         control_type = 'P'
         stiffness = {
             'hip': 150,
@@ -109,7 +106,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         # ========== 以下参数仅在 heightfield/trimesh 模式下生效 ==========
 
         # 高度测量（用于机器人感知复杂地形）
-        measure_heights = False  # plane模式下不需要测量
+        measure_heights = True
         measured_points_x = [-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
         measured_points_y = [-0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
 
@@ -178,20 +175,23 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         density = 0.001         # 密度 [kg/m^3]
         angular_damping = 0.01  # 角阻尼
         linear_damping = 0.01   # 线阻尼
-        max_angular_velocity = 1000.  # 最大角速度 [rad/s]
-        max_linear_velocity = 1000.   # 最大线速度 [m/s]
+        max_angular_velocity = 1000.0  # 最大角速度 [rad/s]
+        max_linear_velocity = 1000.0   # 最大线速度 [m/s]
         armature = 0.01       # 关节惯量补偿 [kg*m^2]
         thickness = 0.01      # 碰撞检测厚度 [m]
         self_collisions = 0   # 0：启用自碰撞，1：禁用自碰撞（可穿透）
         flip_visual_attachments = False  # 是否翻转视觉附件（根据URDF文件调整）
 
     class rewards(LeggedRobotCfg.rewards):
-        base_height_target = 0.75  # 【调整】目标质心高度
+        base_height_target = 0.7  # 【调整】目标质心高度
         target_head_height = 1  # 【调整】目标头部高度
         target_head_margin = 1
         target_base_height_phase1 = 0.45
         target_base_height_phase2 = 0.45
         target_base_height_phase3 = 0.65
+
+        base_height_sigma = 0.25
+        tracking_dof_sigma = 0.25
 
         soft_dof_pos_limit = 0.9  # 软关节位置限制（安全范围比例）
         soft_dof_vel_limit = 0.9  # 软关节速度限制（安全范围比例）
@@ -207,7 +207,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
 
         reward_groups = ['task', 'regu', 'style', 'target']
         num_reward_groups = len(reward_groups)
-        reward_group_weights = [2.5, 0.1, 1, 1]
+        reward_group_weights = [1, 0.1, 1, 1]
 
         class scales:
             task_orientation = 1
@@ -217,7 +217,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         is_gaussian = True
         target_head_height = 1
         target_head_margin = 1
-        orientation_height_threshold = 0.9  # 当机器人站到一定高度后，才开始计算姿态奖励
+        orientation_height_threshold = 0.9
         target_base_height = 0.45
 
         left_foot_displacement_sigma = -2
@@ -242,25 +242,26 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             style_waist_deviation = 0  # BHR8FC2没有腰部关节，禁用
             style_hip_yaw_deviation = -10
             style_hip_roll_deviation = -10
+            style_hip_pitch_deviation = -10
             style_shoulder_roll_deviation = -2.5
             style_left_foot_displacement = 2.5
             style_right_foot_displacement = 2.5
             style_knee_deviation = -0.25
-            style_shank_orientation = 10
-            style_ground_parallel = 20
+            style_thigh_ori = 10
             style_feet_distance = -10
-            style_style_ang_vel_xy = 1
+            style_style_ang_vel_xy = 25
 
             # post-task reward
             target_ang_vel_xy = 10
             target_lin_vel_xy = 10
             target_feet_height_var = 2.5
             target_target_upper_dof_pos = 10
+            target_lower_body_deviation = 10
             target_target_orientation = 10
             target_target_base_height = 10
 
     class domain_rand:
-        use_random = True  # 重新启用domain randomization
+        use_random = True
 
         randomize_actuation_offset = use_random
         actuation_offset_range = [-0.05, 0.05]
@@ -306,7 +307,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         dof_vel_limit = 300
         base_vel_limit = 20
         threshold_height = 0.9
-        no_orientation = False
+        no_orientation = True
 
     class sim:
         dt = 0.005
@@ -327,12 +328,15 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             default_buffer_size_multiplier = 5
             contact_collection = 2  # 0: never, 1: last sub-step, 2: all sub-steps (default=2)
 
+
 class BHR8FC2CfgPPO(LeggedRobotCfgPPO):
     runner_class_name = 'OnPolicyRunner'
+
     class policy:
         init_noise_std = 0.8
         actor_hidden_dims = [512, 256, 128]
         critic_hidden_dims = [512, 256]
+
     class algorithm( LeggedRobotCfgPPO.algorithm ):
         entropy_coef = 0.01
         # smoothness
@@ -342,8 +346,8 @@ class BHR8FC2CfgPPO(LeggedRobotCfgPPO):
 
     class runner( LeggedRobotCfgPPO.runner ):
         run_name = ''
-        save_interval = 500 # check for potential saves every this many iterations
-        experiment_name = 'bhr8fc2_ground'
+        save_interval = 500  # check for potential saves every this many iterations
+        experiment_name = 'bhr8fc2_ground_prone'
         algorithm_class_name = 'PPO'
         init_at_random_ep_len = True
-        max_iterations = 50000 # number of policy updates
+        max_iterations = 50000  # number of policy updates

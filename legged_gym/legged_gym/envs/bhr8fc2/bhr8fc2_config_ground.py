@@ -2,11 +2,8 @@ from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobot
 
 
 class BHR8FC2Cfg(LeggedRobotCfg):
-    """
-    Configuration for BHR8FC2 humanoid robot on ground terrain.
-    """
     class init_state(LeggedRobotCfg.init_state):
-        pos = [0.0, 0.0, 0.5]  # x,y,z [m]
+        pos = [0.0, 0.0, 0.4]  # x,y,z [m]
         rot = [0.0, -1.0, 0, 1.0]  # x,y,z,w [quat]
         target_joint_angles = {
             'left_hip_yaw_joint': 0.0,
@@ -186,7 +183,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         flip_visual_attachments = False  # 是否翻转视觉附件（根据URDF文件调整）
 
     class rewards(LeggedRobotCfg.rewards):
-        base_height_target = 0.75  # 【调整】目标质心高度
+        base_height_target = 0.7  # 【调整】目标质心高度
         target_head_height = 1  # 【调整】目标头部高度
         target_head_margin = 1
         target_base_height_phase1 = 0.45
@@ -329,10 +326,12 @@ class BHR8FC2Cfg(LeggedRobotCfg):
 
 class BHR8FC2CfgPPO(LeggedRobotCfgPPO):
     runner_class_name = 'OnPolicyRunner'
+
     class policy:
         init_noise_std = 0.8
         actor_hidden_dims = [512, 256, 128]
         critic_hidden_dims = [512, 256]
+
     class algorithm( LeggedRobotCfgPPO.algorithm ):
         entropy_coef = 0.01
         # smoothness
@@ -342,8 +341,8 @@ class BHR8FC2CfgPPO(LeggedRobotCfgPPO):
 
     class runner( LeggedRobotCfgPPO.runner ):
         run_name = ''
-        save_interval = 500 # check for potential saves every this many iterations
+        save_interval = 500  # check for potential saves every this many iterations
         experiment_name = 'bhr8fc2_ground'
         algorithm_class_name = 'PPO'
         init_at_random_ep_len = True
-        max_iterations = 50000 # number of policy updates
+        max_iterations = 50000  # number of policy updates
