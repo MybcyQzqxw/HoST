@@ -210,7 +210,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
     class rewards(LeggedRobotCfg.rewards):
         base_height_target = 0.8  # 【调整】目标质心高度
         target_head_height = 1.2  # 【调整】目标头部高度
-        target_head_margin = 1.2  # 目标头部高度容差范围
+        target_head_margin = 1.2
         target_base_height_phase1 = 0.5
         target_base_height_phase2 = 0.5
         target_base_height_phase3 = 0.7

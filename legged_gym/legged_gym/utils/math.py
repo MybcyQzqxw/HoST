@@ -249,3 +249,57 @@ def remove_heading_quat(q):
 # @torch.jit.script
 def torch_rand_float(lower, upper, shape, device):
     return (upper - lower) * torch.rand(*shape, device=device) + lower
+
+
+# ===================== Reward Utility Functions =====================
+
+def sigmoid_reward(x, value_at_1):
+    """
+    Parameterized Gaussian function for smooth reward shaping.
+    
+    Returns exp(-0.5 * (x * scale)^2) where scale is chosen such that
+    sigmoid_reward(1, value_at_1) = value_at_1.
+    
+    Args:
+        x: Input tensor (typically normalized distance)
+        value_at_1: The function value when x = 1
+    
+    Returns:
+        Gaussian-shaped reward in range (0, 1]
+    """
+    scale = np.sqrt(-2 * np.log(value_at_1))
+    return torch.exp(-0.5 * (x * scale) ** 2)
+
+
+def tolerance(x, bounds=(0.0, 0.0), margin=0.0, value_at_margin=0.1):
+    """
+    Tolerance reward function with smooth boundaries.
+    
+    Returns 1.0 if x is within bounds, otherwise decays smoothly using
+    a Gaussian function based on distance from the nearest bound.
+    
+    Args:
+        x: Input tensor to evaluate
+        bounds: Tuple (lower, upper) defining the target range
+        margin: Distance scale for decay outside bounds
+        value_at_margin: Reward value when distance from bound equals margin
+    
+    Returns:
+        Reward tensor with values in [value_at_margin, 1.0]
+    
+    Example:
+        # Head height reward: full reward above 1.2m, decay below
+        reward = tolerance(head_height, (1.2, np.inf), margin=1.2, value_at_margin=0.1)
+    """
+    lower, upper = bounds
+    assert lower < upper
+    assert margin >= 0
+
+    in_bounds = torch.logical_and(lower <= x, x <= upper)
+    if margin == 0:
+        value = torch.where(in_bounds, 1.0, 0)
+    else:
+        d = torch.where(x < lower, lower - x, x - upper) / margin
+        value = torch.where(in_bounds, 1.0, sigmoid_reward(d.double(), value_at_margin))
+    
+    return value

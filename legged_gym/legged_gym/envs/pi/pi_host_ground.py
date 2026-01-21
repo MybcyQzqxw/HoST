@@ -20,13 +20,13 @@ from legged_gym.utils.isaacgym_utils import get_euler_xyz as get_euler_xyz_in_te
 from legged_gym.utils.helpers import class_to_dict
 from .pi_config_ground import PiCfg
 
-from legged_gym.envs.g1.g1_utils import (
+from legged_gym.utils.motion_lib import (
     MotionLib, 
     load_imitation_dataset,
     compute_residual_observations,
-    tolerance
 )
 from legged_gym.utils.math import (
+    tolerance,
     quat_rotate,
     euler_xyz_to_quat,
     quat_apply_yaw,
