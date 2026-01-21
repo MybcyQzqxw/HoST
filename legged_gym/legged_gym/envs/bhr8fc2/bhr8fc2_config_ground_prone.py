@@ -79,11 +79,11 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             'elbow': 150,
         }  # [N*m/rad]
         damping = {
-            'hip': 4,
-            'knee': 4,
-            'ankle': 4,
-            'shoulder': 4,
-            'elbow': 4,
+            'hip': 2.5,
+            'knee': 2.5,
+            'ankle': 2.5,
+            'shoulder': 2.5,
+            'elbow': 2.5,
         }  # [N*m*s/rad]
         # action scale: target angle = actionRescale * action + cur_dof_pos
         action_scale = 1
