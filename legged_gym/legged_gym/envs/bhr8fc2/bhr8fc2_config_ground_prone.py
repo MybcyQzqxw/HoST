@@ -208,9 +208,9 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         flip_visual_attachments = False  # 是否翻转视觉附件
 
     class rewards(LeggedRobotCfg.rewards):
-        base_height_target = 0.75  # 【调整】目标质心高度
-        target_head_height = 1.25  # 【调整】目标头部高度
-        target_head_margin = 1.25  # 目标头部高度容差范围
+        base_height_target = 0.8  # 【调整】目标质心高度
+        target_head_height = 1.2  # 【调整】目标头部高度
+        target_head_margin = 1.2  # 目标头部高度容差范围
         target_base_height_phase1 = 0.5
         target_base_height_phase2 = 0.5
         target_base_height_phase3 = 0.7
@@ -240,8 +240,8 @@ class BHR8FC2Cfg(LeggedRobotCfg):
 
     class constraints( LeggedRobotCfg.rewards ):
         is_gaussian = True
-        target_head_height = 1.25
-        target_head_margin = 1.25
+        target_head_height = 1.2
+        target_head_margin = 1.2
         orientation_height_threshold = 0.9
         target_base_height = 0.5
 
