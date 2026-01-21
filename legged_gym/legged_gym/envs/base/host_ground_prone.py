@@ -1125,7 +1125,7 @@ class LeggedRobot(BaseTask):
         return torch.square(self.base_lin_vel[:, 2])
     
     def _reward_lin_vel_xy(self):
-        # Penalize z axis base linear velocity
+        # Penalize xy axes base linear velocity
         base_height = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase3
         return torch.exp(torch.sum(torch.square(self.base_lin_vel[:, :2]), dim=1) * -5) * base_height
 
@@ -1142,11 +1142,12 @@ class LeggedRobot(BaseTask):
     def _reward_orientation(self):
         # Penalize non flat base orientation
         if not self.is_gaussian:
-            mse_error = torch.sum(torch.square(self.projected_gravity - torch.tensor([0, 0 ,1], device=self.device)), dim=-1)
+            # 下面两行有问题，不使用
+            mse_error = torch.sum(torch.square(self.projected_gravity - torch.tensor([0, 0, -1], device=self.device)), dim=-1)
             reward = torch.exp(mse_error/self.cfg.rewards.orientation_sigma) * (self.root_states[:, 2] > 0.4)
         else:
             base_height = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase1
-            reward = tolerance(-self.projected_gravity[:, 2], [self.cfg.rewards.orientation_threshold, np.inf], 1., 0.05) #-1 
+            reward = tolerance(-self.projected_gravity[:, 2], [self.cfg.rewards.orientation_threshold, np.inf], 1.0, 0.05)
             #reward = 1 + reward * base_height
         return reward
 
@@ -1168,7 +1169,6 @@ class LeggedRobot(BaseTask):
             delta_headheight = head_height - self.old_headheight
             self.max_headheight = torch.max(torch.cat((head_height, self.old_headheight), dim=1), dim=1)[0].unsqueeze(-1)
             self.old_headheight = head_height
-        
             return reward
 
     def _reward_shank_orientation(self):

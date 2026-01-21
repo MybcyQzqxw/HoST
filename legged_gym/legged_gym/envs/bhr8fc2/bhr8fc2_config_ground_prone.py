@@ -123,59 +123,77 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         num_rows = 1            # 地形网格行数（难度级别数）
         num_cols = 20           # 地形网格列数（地形类型数）
         terrain_proportions = [1, 0, 0, 0, 0]  # [平滑斜坡, 粗糙斜坡, 台阶, 离散障碍, 随机高度]
-
         # trimesh专用
         slope_treshold = 0.75  # 斜坡角度阈值，超过此值修正为垂直面
 
     class asset(LeggedRobotCfg.asset):
         file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/bhr8fc2/BHR8FC2.urdf'
         name = 'bhr8fc2'
-        
-        left_foot_name = 'left_ankle_pitch'
-        right_foot_name = 'right_ankle_pitch'
-        left_knee_name = 'left_knee'
-        right_knee_name = 'right_knee'
-        left_thigh_name = 'left_hip_pitch'
-        right_thigh_name = 'right_hip_pitch'
-        foot_name = 'ankle_roll'
-        penalize_contacts_on = ['elbow', 'shoulder', 'knee', 'hip']
+
+        # 惩罚和终止条件
+        penalize_contacts_on = ['head', 'shoulder', 'hip']
         terminate_after_contacts_on = []
 
-        left_shoulder_name = 'left_shoulder'
-        right_shoulder_name = 'right_shoulder'
-        left_leg_joints = ['left_hip_yaw_joint', 'left_hip_roll_joint', 'left_hip_pitch_joint', 'left_knee_joint', 'left_ankle_pitch_joint', 'left_ankle_roll_joint']
-        right_leg_joints = ['right_hip_yaw_joint', 'right_hip_roll_joint', 'right_hip_pitch_joint', 'right_knee_joint', 'right_ankle_pitch_joint', 'right_ankle_roll_joint']
+        left_leg_joints = ['left_hip_yaw_joint',
+                           'left_hip_roll_joint',
+                           'left_hip_pitch_joint',
+                           'left_knee_joint',
+                           'left_ankle_pitch_joint',
+                           'left_ankle_roll_joint']
+        right_leg_joints = ['right_hip_yaw_joint',
+                            'right_hip_roll_joint',
+                            'right_hip_pitch_joint',
+                            'right_knee_joint',
+                            'right_ankle_pitch_joint',
+                            'right_ankle_roll_joint']
+        left_arm_joints = ['left_shoulder_pitch_joint',
+                           'left_shoulder_roll_joint',
+                           'left_shoulder_yaw_joint',
+                           'left_elbow_joint']
+        right_arm_joints = ['right_shoulder_pitch_joint',
+                            'right_shoulder_roll_joint',
+                            'right_shoulder_yaw_joint',
+                            'right_elbow_joint']
         left_hip_joints = ['left_hip_yaw_joint']
         right_hip_joints = ['right_hip_yaw_joint']
         left_hip_roll_joints = ['left_hip_roll_joint']
         right_hip_roll_joints = ['right_hip_roll_joint']
         left_hip_pitch_joints = ['left_hip_pitch_joint']
         right_hip_pitch_joints = ['right_hip_pitch_joint']
-
-        left_shoulder_roll_joints = ['left_shoulder_roll_joint']
-        right_shoulder_roll_joints = ['right_shoulder_roll_joint']
-
+        knee_joints = ['left_knee_joint', 'right_knee_joint']
         left_knee_joints = ['left_knee_joint']
         right_knee_joints = ['right_knee_joint']
-
-        left_arm_joints = ['left_shoulder_pitch_joint', 'left_shoulder_roll_joint', 'left_shoulder_yaw_joint', 'left_elbow_joint']
-        right_arm_joints = ['right_shoulder_pitch_joint', 'right_shoulder_roll_joint', 'right_shoulder_yaw_joint', 'right_elbow_joint']
-        waist_joints = []  # BHR8FC2 没有腰部关节
-        knee_joints = ['left_knee_joint', 'right_knee_joint']
         ankle_joints = ['left_ankle_pitch_joint', 'left_ankle_roll_joint', 'right_ankle_pitch_joint', 'right_ankle_roll_joint']
+        left_shoulder_roll_joints = ['left_shoulder_roll_joint']
+        right_shoulder_roll_joints = ['right_shoulder_roll_joint']
+        waist_joints = []  # BHR8FC2 没有腰部关节
 
         keyframe_name = ''  # BHR8FC2 没有专门的 keyframe links
         head_name = 'head'
-
         trunk_names = ['torso']
         base_name = 'torso_link'
         tracking_body_names = []
 
-        left_upper_body_names = ['left_shoulder_pitch', 'left_elbow']
-        right_upper_body_names = ['right_shoulder_pitch', 'right_elbow']
-        left_lower_body_names = ['left_hip_pitch', 'left_ankle_roll', 'left_knee']
-        right_lower_body_names = ['right_hip_pitch', 'right_ankle_roll', 'right_knee']
+        left_thigh_name = 'left_hip_pitch'
+        right_thigh_name = 'right_hip_pitch'
+        left_knee_name = 'left_knee'
+        right_knee_name = 'right_knee'
+        left_foot_name = 'left_ankle_pitch'
+        right_foot_name = 'right_ankle_pitch'
+        foot_name = 'ankle_roll'
+        left_shoulder_name = 'left_shoulder'
+        right_shoulder_name = 'right_shoulder'
 
+        left_upper_body_names = ['left_shoulder_pitch',
+                                 'left_elbow']
+        right_upper_body_names = ['right_shoulder_pitch',
+                                  'right_elbow']
+        left_lower_body_names = ['left_hip_pitch',
+                                 'left_ankle_roll',
+                                 'left_knee']
+        right_lower_body_names = ['right_hip_pitch',
+                                  'right_ankle_roll',
+                                  'right_knee']
         left_ankle_names = ['left_ankle_roll']
         right_ankle_names = ['right_ankle_roll']
 
@@ -187,15 +205,15 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         armature = 0.01       # 关节惯量补偿 [kg*m^2]
         thickness = 0.01      # 碰撞检测厚度 [m]
         self_collisions = 0   # 0：启用自碰撞，1：禁用自碰撞（可穿透）
-        flip_visual_attachments = False  # 是否翻转视觉附件（根据URDF文件调整）
+        flip_visual_attachments = False  # 是否翻转视觉附件
 
     class rewards(LeggedRobotCfg.rewards):
-        base_height_target = 0.8  # 【调整】目标质心高度
-        target_head_height = 1.4  # 【调整】目标头部高度
-        target_head_margin = 1.4  # 目标头部高度容差范围
-        target_base_height_phase1 = 0.55
-        target_base_height_phase2 = 0.55
-        target_base_height_phase3 = 0.75
+        base_height_target = 0.75  # 【调整】目标质心高度
+        target_head_height = 1.25  # 【调整】目标头部高度
+        target_head_margin = 1.25  # 目标头部高度容差范围
+        target_base_height_phase1 = 0.5
+        target_base_height_phase2 = 0.5
+        target_base_height_phase3 = 0.7
 
         base_height_sigma = 0.25
         tracking_dof_sigma = 0.25
@@ -222,10 +240,10 @@ class BHR8FC2Cfg(LeggedRobotCfg):
 
     class constraints( LeggedRobotCfg.rewards ):
         is_gaussian = True
-        target_head_height = 1.4
-        target_head_margin = 1.4
+        target_head_height = 1.25
+        target_head_margin = 1.25
         orientation_height_threshold = 0.9
-        target_base_height = 0.55
+        target_base_height = 0.5
 
         left_foot_displacement_sigma = -2
         right_foot_displacement_sigma = -2
