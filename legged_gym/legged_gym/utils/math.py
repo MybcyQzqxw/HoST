@@ -5,41 +5,47 @@ from isaacgym.torch_utils import quat_apply, normalize
 from typing import Tuple
 import math
 
+
 # @ torch.jit.script
 def quat_apply_yaw(quat, vec):
     quat_yaw = quat.clone().view(-1, 4)
-    quat_yaw[:, :2] = 0.
+    quat_yaw[:, :2] = 0.0
     quat_yaw = normalize(quat_yaw)
     return quat_apply(quat_yaw, vec)
 
+
 # @ torch.jit.script
 def wrap_to_pi(angles):
-    angles %= 2*np.pi
-    angles -= 2*np.pi * (angles > np.pi)
+    angles %= 2.0 * math.pi
+    angles -= 2.0 * math.pi * (angles > math.pi)
     return angles
+
 
 # @ torch.jit.script
 def torch_rand_sqrt_float(lower, upper, shape, device):
     # type: (float, float, Tuple[int, int], str) -> Tensor
-    r = 2*torch.rand(*shape, device=device) - 1
-    r = torch.where(r<0., -torch.sqrt(-r), torch.sqrt(r))
-    r =  (r + 1.) / 2.
+    r = 2.0 * torch.rand(*shape, device=device) - 1.0
+    r = torch.where(r < 0.0, -torch.sqrt(-r), torch.sqrt(r))
+    r = (r + 1.0) / 2.0
     return (upper - lower) * r + lower
 
 
 # @torch.jit.script
 def normalize(x, eps=1e-9):
-    x_norm =  x.norm(p=2, dim=-1).clip(min=eps, max=None)
+    x_norm = x.norm(p=2, dim=-1).clip(min=eps, max=None)
     return x / x_norm.unsqueeze(-1)
+
 
 # @torch.jit.script
 def copysign(a, b):
     a = torch.zeros_like(b) + a
     return torch.abs(a) * torch.sign(b)
 
+
 # @torch.jit.script
 def quat_conjugate(x):
     return torch.cat([-x[..., :3], x[..., 3:]], dim=-1)
+
 
 # @torch.jit.script
 def quat_apply(a, b):
@@ -48,6 +54,7 @@ def quat_apply(a, b):
     xyz = a[..., :3]
     t = xyz.cross(b, dim=-1) * 2.0
     return (b + a[..., 3:] * t + xyz.cross(t, dim=-1))
+
 
 # @torch.jit.script
 def quat_mul(a, b):
@@ -64,9 +71,11 @@ def quat_mul(a, b):
     z = qq - zz + (z1 + y1) * (w2 - x2)
     return torch.stack([x, y, z, w], dim=-1)
 
+
 # @torch.jit.script
 def normalize_angle(x):
     return torch.atan2(torch.sin(x), torch.cos(x))
+
 
 # @torch.jit.script
 def quat_to_euler_xyz(q):
@@ -74,8 +83,7 @@ def quat_to_euler_xyz(q):
     qx, qy, qz, qw = 0, 1, 2, 3
     # roll (x-axis rotation)
     sinr_cosp = 2.0 * (q[..., qw] * q[..., qx] + q[..., qy] * q[..., qz])
-    cosr_cosp = q[..., qw] * q[..., qw] - q[..., qx] * \
-                q[..., qx] - q[..., qy] * q[..., qy] + q[..., qz] * q[..., qz]
+    cosr_cosp = q[..., qw] * q[..., qw] - q[..., qx] * q[..., qx] - q[..., qy] * q[..., qy] + q[..., qz] * q[..., qz]
     roll = torch.atan2(sinr_cosp, cosr_cosp)
 
     # pitch (y-axis rotation)
@@ -85,29 +93,31 @@ def quat_to_euler_xyz(q):
 
     # yaw (z-axis rotation)
     siny_cosp = 2.0 * (q[..., qw] * q[..., qz] + q[..., qx] * q[..., qy])
-    cosy_cosp = q[..., qw] * q[..., qw] + q[..., qx] * \
-                q[..., qx] - q[..., qy] * q[..., qy] - q[..., qz] * q[..., qz]
+    cosy_cosp = q[..., qw] * q[..., qw] + q[..., qx] * q[..., qx] - q[..., qy] * q[..., qy] - q[..., qz] * q[..., qz]
     yaw = torch.atan2(siny_cosp, cosy_cosp)
     return torch.stack((roll, pitch, yaw), dim=-1)
+
 
 # @torch.jit.script
 def quat_apply_yaw(quat, vec):
     quat_yaw = quat.clone()
     quat_yaw[..., 0:2] = 0.0
     quat_yaw = normalize(quat_yaw)
-    if quat.shape[1] ==1 and len(quat.shape) == 3:
+    if quat.shape[1] == 1 and len(quat.shape) == 3:
         quat_yaw = quat_yaw.repeat(1, vec.shape[1], 1)
 
     return quat_apply(quat_yaw, vec)
+
 
 # @torch.jit.script
 def quat_apply_yaw_inverse(quat, vec):
     quat_yaw = quat_conjugate(quat.clone())
     quat_yaw[..., 0:2] = 0.0
     quat_yaw = normalize(quat_yaw)
-    if quat.shape[1] ==1 and len(quat.shape) == 3:
+    if quat.shape[1] == 1 and len(quat.shape) == 3:
         quat_yaw = quat_yaw.repeat(1, vec.shape[1], 1)
     return quat_apply(quat_yaw, vec)
+
 
 # @torch.jit.script
 def quat_mul_yaw(a, b):
@@ -115,24 +125,28 @@ def quat_mul_yaw(a, b):
     xyz_yaw = torch.cat((b[..., 0:2], xyz[..., 2:3]), dim=-1)
     return euler_xyz_to_quat(xyz_yaw)
 
+
 # @torch.jit.script
 def quat_mul_yaw_inverse(a, b):
     xyz = quat_to_euler_xyz(b) - quat_to_euler_xyz(a)
     xyz_yaw = torch.cat((b[..., 0:2], xyz[..., 2:3]), dim=-1)
     return euler_xyz_to_quat(xyz_yaw)
 
+
 # @torch.jit.script
 def wrap_to_pi(angles):
-    angles %= 2*math.pi
-    angles -= 2*math.pi * (angles > math.pi)
+    angles %= 2.0 * math.pi
+    angles -= 2.0 * math.pi * (angles > math.pi)
     return angles
+
 
 # @torch.jit.script
 def torch_rand_sqrt_float(lower, upper, shape, device):
-    r = 2*torch.rand(*shape, device=device) - 1
-    r = torch.where(r<0., -torch.sqrt(-r), torch.sqrt(r))
-    r =  (r + 1.) / 2.
+    r = 2 * torch.rand(*shape, device=device) - 1
+    r = torch.where(r < 0.0, -torch.sqrt(-r), torch.sqrt(r))
+    r = (r + 1.0) / 2.0
     return (upper - lower) * r + lower
+
 
 # @torch.jit.script
 def quat_rotate(q, v):
@@ -145,6 +159,7 @@ def quat_rotate(q, v):
     c = q_vec * dot * 2.0
     return a + b + c
 
+
 # @torch.jit.script
 def quat_rotate_inverse(q, v):
     q_expand = q + torch.zeros_like(v[..., 0:1])
@@ -155,6 +170,7 @@ def quat_rotate_inverse(q, v):
     dot = torch.sum(q_vec * v, dim=-1, keepdim=True)
     c = q_vec * dot * 2.0
     return a - b + c
+
 
 # @torch.jit.script
 def quat_to_angle_axis(q):
@@ -174,6 +190,7 @@ def quat_to_angle_axis(q):
     axis = torch.where(mask[..., None], axis, default_axis)
     return wrap_to_pi(angle), axis
 
+
 # @torch.jit.script
 def angle_axis_to_quat(angle, axis):
     theta = (angle / 2).unsqueeze(-1)
@@ -181,12 +198,13 @@ def angle_axis_to_quat(angle, axis):
     w = theta.cos()
     return normalize(torch.cat([xyz, w], dim=-1))
 
+
 # @torch.jit.script
 def euler_xyz_to_quat(xyz):
     roll = xyz[..., 0]
     pitch = xyz[..., 1]
     yaw = xyz[..., 2]
-    
+
     cy = torch.cos(yaw * 0.5)
     sy = torch.sin(yaw * 0.5)
     cr = torch.cos(roll * 0.5)
@@ -202,6 +220,7 @@ def euler_xyz_to_quat(xyz):
     q = torch.stack([qx, qy, qz, qw], dim=-1)
     return normalize(q)
 
+
 # @torch.jit.script
 def quat_to_rot6d(q):
     q = normalize(q)
@@ -216,10 +235,12 @@ def quat_to_rot6d(q):
     norm_tan = torch.cat([tan, norm], dim=len(tan.shape) - 1)
     return norm_tan
 
+
 # @torch.jit.script
 def quat_error(a, b):
     r = quat_mul(a, quat_conjugate(b))
     return r[..., 0:3] * torch.sign(r[..., 3]).unsqueeze(-1)
+
 
 # @torch.jit.script
 def heading(q):
@@ -229,11 +250,13 @@ def heading(q):
     heading = torch.atan2(rot_dir[..., 1], rot_dir[..., 0])
     return heading
 
+
 # @torch.jit.script
 def heading_quat(q):
     axis = torch.zeros_like(q[..., 0:3])
     axis[..., 2] = 1
     return angle_axis_to_quat(heading(q), axis)
+
 
 # @torch.jit.script
 def heading_quat_conjugate(q):
@@ -241,10 +264,12 @@ def heading_quat_conjugate(q):
     axis[..., 2] = 1
     return angle_axis_to_quat(-heading(q), axis)
 
+
 # @torch.jit.script
 def remove_heading_quat(q):
     heading_q = heading_quat_conjugate(q)
     return quat_mul(heading_q, q)
+
 
 # @torch.jit.script
 def torch_rand_float(lower, upper, shape, device):
@@ -256,14 +281,14 @@ def torch_rand_float(lower, upper, shape, device):
 def sigmoid_reward(x, value_at_1):
     """
     Parameterized Gaussian function for smooth reward shaping.
-    
+
     Returns exp(-0.5 * (x * scale)^2) where scale is chosen such that
     sigmoid_reward(1, value_at_1) = value_at_1.
-    
+
     Args:
         x: Input tensor (typically normalized distance)
         value_at_1: The function value when x = 1
-    
+
     Returns:
         Gaussian-shaped reward in range (0, 1]
     """
@@ -274,19 +299,19 @@ def sigmoid_reward(x, value_at_1):
 def tolerance(x, bounds=(0.0, 0.0), margin=0.0, value_at_margin=0.1):
     """
     Tolerance reward function with smooth boundaries.
-    
+
     Returns 1.0 if x is within bounds, otherwise decays smoothly using
     a Gaussian function based on distance from the nearest bound.
-    
+
     Args:
         x: Input tensor to evaluate
         bounds: Tuple (lower, upper) defining the target range
         margin: Distance scale for decay outside bounds
         value_at_margin: Reward value when distance from bound equals margin
-    
+
     Returns:
         Reward tensor with values in [value_at_margin, 1.0]
-    
+
     Example:
         # Head height reward: full reward above 1.2m, decay below
         reward = tolerance(head_height, (1.2, np.inf), margin=1.2, value_at_margin=0.1)
@@ -297,9 +322,9 @@ def tolerance(x, bounds=(0.0, 0.0), margin=0.0, value_at_margin=0.1):
 
     in_bounds = torch.logical_and(lower <= x, x <= upper)
     if margin == 0:
-        value = torch.where(in_bounds, 1.0, 0)
+        value = torch.where(in_bounds, 1.0, 0.0)
     else:
         d = torch.where(x < lower, lower - x, x - upper) / margin
         value = torch.where(in_bounds, 1.0, sigmoid_reward(d.double(), value_at_margin))
-    
+
     return value

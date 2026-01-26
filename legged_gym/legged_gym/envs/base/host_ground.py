@@ -21,7 +21,7 @@ from legged_gym.utils.helpers import class_to_dict
 from .legged_robot_config import LeggedRobotCfg
 
 from legged_gym.utils.motion_lib import (
-    MotionLib, 
+    MotionLib,
     load_imitation_dataset,
     compute_residual_observations,
 )

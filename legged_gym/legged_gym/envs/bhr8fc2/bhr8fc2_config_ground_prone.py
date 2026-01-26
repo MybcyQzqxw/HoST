@@ -65,7 +65,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         num_one_step_observations = 67
         num_actor_history = 6  # 历史观测步数
         num_observations = num_actor_history * num_one_step_observations
-        episode_length_s = 10  # 每个episode的时长（秒）
+        episode_length_s = 20  # 每个episode的时长（秒）
         unactuated_timesteps = 30  # 环境启动后无动作控制的时间步数（用于稳定初始状态）
 
     class control(LeggedRobotCfg.control):
@@ -134,6 +134,69 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         penalize_contacts_on = ['head', 'shoulder', 'hip']
         terminate_after_contacts_on = []
 
+        base_name = 'torso_link'
+        head_name = 'head'
+        keyframe_name = ''  # BHR8FC2 没有专门的 keyframe links
+        left_shoulder_name = 'left_shoulder'
+        right_shoulder_name = 'right_shoulder'
+        left_thigh_name = 'left_hip_pitch'
+        right_thigh_name = 'right_hip_pitch'
+        left_knee_name = 'left_knee'
+        right_knee_name = 'right_knee'
+        left_foot_name = 'left_ankle_roll'
+        right_foot_name = 'right_ankle_roll'
+        foot_name = 'ankle_roll'
+
+        left_shoulder_pitch_joints = ['left_shoulder_pitch_joint']
+        right_shoulder_pitch_joints = ['right_shoulder_pitch_joint']
+        left_shoulder_roll_joints = ['left_shoulder_roll_joint']
+        right_shoulder_roll_joints = ['right_shoulder_roll_joint']
+        left_shoulder_yaw_joints = ['left_shoulder_yaw_joint']
+        right_shoulder_yaw_joints = ['right_shoulder_yaw_joint']
+        left_elbow_joints = ['left_elbow_joint']
+        right_elbow_joints = ['right_elbow_joint']
+        waist_joints = []  # BHR8FC2 没有腰部关节
+        left_hip_yaw_joints = ['left_hip_yaw_joint']
+        right_hip_yaw_joints = ['right_hip_yaw_joint']
+        left_hip_roll_joints = ['left_hip_roll_joint']
+        right_hip_roll_joints = ['right_hip_roll_joint']
+        left_hip_pitch_joints = ['left_hip_pitch_joint']
+        right_hip_pitch_joints = ['right_hip_pitch_joint']
+        left_knee_joints = ['left_knee_joint']
+        right_knee_joints = ['right_knee_joint']
+        left_ankle_pitch_joints = ['left_ankle_pitch_joint']
+        right_ankle_pitch_joints = ['right_ankle_pitch_joint']
+        left_ankle_roll_joints = ['left_ankle_roll_joint']
+        right_ankle_roll_joints = ['right_ankle_roll_joint']
+        shoulder_joints = ['left_shoulder_pitch_joint',
+                           'left_shoulder_roll_joint',
+                           'left_shoulder_yaw_joint',
+                           'right_shoulder_pitch_joint',
+                           'right_shoulder_roll_joint',
+                           'right_shoulder_yaw_joint']
+        elbow_joints = ['left_elbow_joint',
+                        'right_elbow_joint']
+        hip_joints = ['left_hip_yaw_joint',
+                      'left_hip_roll_joint',
+                      'left_hip_pitch_joint',
+                      'right_hip_yaw_joint',
+                      'right_hip_roll_joint',
+                      'right_hip_pitch_joint']
+        knee_joints = ['left_knee_joint',
+                       'right_knee_joint']
+        ankle_joints = ['left_ankle_pitch_joint',
+                        'left_ankle_roll_joint',
+                        'right_ankle_pitch_joint',
+                        'right_ankle_roll_joint']
+
+        left_arm_joints = ['left_shoulder_pitch_joint',
+                           'left_shoulder_roll_joint',
+                           'left_shoulder_yaw_joint',
+                           'left_elbow_joint']
+        right_arm_joints = ['right_shoulder_pitch_joint',
+                            'right_shoulder_roll_joint',
+                            'right_shoulder_yaw_joint',
+                            'right_elbow_joint']
         left_leg_joints = ['left_hip_yaw_joint',
                            'left_hip_roll_joint',
                            'left_hip_pitch_joint',
@@ -146,74 +209,40 @@ class BHR8FC2Cfg(LeggedRobotCfg):
                             'right_knee_joint',
                             'right_ankle_pitch_joint',
                             'right_ankle_roll_joint']
-        left_arm_joints = ['left_shoulder_pitch_joint',
-                           'left_shoulder_roll_joint',
-                           'left_shoulder_yaw_joint',
-                           'left_elbow_joint']
-        right_arm_joints = ['right_shoulder_pitch_joint',
-                            'right_shoulder_roll_joint',
-                            'right_shoulder_yaw_joint',
-                            'right_elbow_joint']
-        left_hip_joints = ['left_hip_yaw_joint']
-        right_hip_joints = ['right_hip_yaw_joint']
-        left_hip_roll_joints = ['left_hip_roll_joint']
-        right_hip_roll_joints = ['right_hip_roll_joint']
-        left_hip_pitch_joints = ['left_hip_pitch_joint']
-        right_hip_pitch_joints = ['right_hip_pitch_joint']
-        knee_joints = ['left_knee_joint', 'right_knee_joint']
-        left_knee_joints = ['left_knee_joint']
-        right_knee_joints = ['right_knee_joint']
-        ankle_joints = ['left_ankle_pitch_joint', 'left_ankle_roll_joint', 'right_ankle_pitch_joint', 'right_ankle_roll_joint']
-        left_shoulder_roll_joints = ['left_shoulder_roll_joint']
-        right_shoulder_roll_joints = ['right_shoulder_roll_joint']
-        waist_joints = []  # BHR8FC2 没有腰部关节
 
-        keyframe_name = ''  # BHR8FC2 没有专门的 keyframe links
-        head_name = 'head'
         trunk_names = ['torso']
-        base_name = 'torso_link'
         tracking_body_names = []
 
-        left_thigh_name = 'left_hip_pitch'
-        right_thigh_name = 'right_hip_pitch'
-        left_knee_name = 'left_knee'
-        right_knee_name = 'right_knee'
-        left_foot_name = 'left_ankle_pitch'
-        right_foot_name = 'right_ankle_pitch'
-        foot_name = 'ankle_roll'
-        left_shoulder_name = 'left_shoulder'
-        right_shoulder_name = 'right_shoulder'
-
         left_upper_body_names = ['left_shoulder_pitch',
+                                 'left_shoulder_roll',
+                                 'left_shoulder_yaw',
                                  'left_elbow']
         right_upper_body_names = ['right_shoulder_pitch',
+                                  'right_shoulder_roll',
+                                  'right_shoulder_yaw',
                                   'right_elbow']
-        left_lower_body_names = ['left_hip_pitch',
-                                 'left_ankle_roll',
-                                 'left_knee']
-        right_lower_body_names = ['right_hip_pitch',
-                                  'right_ankle_roll',
-                                  'right_knee']
-        left_ankle_names = ['left_ankle_roll']
-        right_ankle_names = ['right_ankle_roll']
-
-        density = 0.001         # 密度 [kg/m^3]
-        angular_damping = 0.01  # 角阻尼
-        linear_damping = 0.01   # 线阻尼
-        max_angular_velocity = 1000.0  # 最大角速度 [rad/s]
-        max_linear_velocity = 1000.0   # 最大线速度 [m/s]
-        armature = 0.01       # 关节惯量补偿 [kg*m^2]
-        thickness = 0.01      # 碰撞检测厚度 [m]
-        self_collisions = 0   # 0：启用自碰撞，1：禁用自碰撞（可穿透）
-        flip_visual_attachments = False  # 是否翻转视觉附件
+        left_lower_body_names = ['left_hip_yaw',
+                                 'left_hip_roll',
+                                 'left_hip_pitch',
+                                 'left_knee',
+                                 'left_ankle_pitch',
+                                 'left_ankle_roll']
+        right_lower_body_names = ['right_hip_yaw',
+                                  'right_hip_roll',
+                                  'right_hip_pitch',
+                                  'right_knee',
+                                  'right_ankle_pitch',
+                                  'right_ankle_roll']
+        left_ankle_names = ['left_ankle_pitch']
+        right_ankle_names = ['right_ankle_pitch']
 
     class rewards(LeggedRobotCfg.rewards):
         base_height_target = 0.8  # 【调整】目标质心高度
-        target_head_height = 1.2  # 【调整】目标头部高度
-        target_head_margin = 1.2
-        target_base_height_phase1 = 0.5
-        target_base_height_phase2 = 0.5
-        target_base_height_phase3 = 0.7
+        target_head_height = 1.3  # 【调整】目标头部高度
+        target_head_margin = 1.3
+        target_base_height_phase1 = 0.55
+        target_base_height_phase2 = 0.55
+        target_base_height_phase3 = 0.75
 
         base_height_sigma = 0.25
         tracking_dof_sigma = 0.25
@@ -238,19 +267,19 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             task_orientation = 1
             task_head_height = 1
 
-    class constraints( LeggedRobotCfg.rewards ):
+    class constraints(LeggedRobotCfg.rewards):
         is_gaussian = True
-        target_head_height = 1.2
-        target_head_margin = 1.2
+        target_head_height = 1.3
+        target_head_margin = 1.3
         orientation_height_threshold = 0.9
-        target_base_height = 0.5
+        target_base_height = 0.55
 
         left_foot_displacement_sigma = -2
         right_foot_displacement_sigma = -2
         hip_yaw_var_sigma = -2
         target_dof_pos_sigma = -0.1
         post_task = False
-        
+
         class scales:
             # regularization reward
             regu_dof_acc = -2.5e-7
@@ -288,32 +317,36 @@ class BHR8FC2Cfg(LeggedRobotCfg):
     class domain_rand:
         use_random = True
 
-        randomize_actuation_offset = use_random
-        actuation_offset_range = [-0.05, 0.05]
-
-        randomize_motor_strength = use_random
-        motor_strength_range = [0.9, 1.1]
-
+        # _create_envs 中初始化下面 5 个
+        # 负载质量
         randomize_payload_mass = use_random
         payload_mass_range = [-2, 5]
-
+        # 质心偏移
         randomize_com_displacement = use_random
         com_displacement_range = [-0.03, 0.03]
-
+        # 摩擦系数
+        randomize_friction = use_random
+        friction_range = [0.1, 1]
+        # 恢复系数
+        randomize_restitution = use_random
+        restitution_range = [0.0, 1.0]
+        # 连杆质量
         randomize_link_mass = use_random
         link_mass_range = [0.8, 1.2]
 
-        randomize_friction = use_random
-        friction_range = [0.1, 1]
-
-        randomize_restitution = use_random
-        restitution_range = [0.0, 1.0]
-
+        # _init_buffers 中初始化下面 4 个
+        # kp
         randomize_kp = use_random
         kp_range = [0.85, 1.15]
-
+        # kd
         randomize_kd = use_random
         kd_range = [0.85, 1.15]
+        # 驱动偏置
+        randomize_actuation_offset = use_random
+        actuation_offset_range = [-0.05, 0.05]
+        # 电机力矩
+        randomize_motor_strength = use_random
+        motor_strength_range = [0.9, 1.1]
 
         randomize_initial_joint_pos = True
         initial_joint_pos_scale = [0.9, 1.1]
@@ -362,14 +395,14 @@ class BHR8FC2CfgPPO(LeggedRobotCfgPPO):
         actor_hidden_dims = [512, 256, 128]
         critic_hidden_dims = [512, 256]
 
-    class algorithm( LeggedRobotCfgPPO.algorithm ):
+    class algorithm(LeggedRobotCfgPPO.algorithm):
         entropy_coef = 0.01
         # smoothness
         value_smoothness_coef = 0.1
         smoothness_upper_bound = 1.0
         smoothness_lower_bound = 0.1
 
-    class runner( LeggedRobotCfgPPO.runner ):
+    class runner(LeggedRobotCfgPPO.runner):
         run_name = ''
         save_interval = 500  # check for potential saves every this many iterations
         experiment_name = 'bhr8fc2_ground_prone'
