@@ -221,7 +221,7 @@ class LeggedRobot(BaseTask):
         self._reset_root_states(env_ids)
 
         self._resample_commands(env_ids)
-        self.update_force_curriculum(env_ids)
+        self.update_curriculum(env_ids)
 
         # reset buffers
         self.last_actions[env_ids] = 0.
@@ -648,7 +648,7 @@ class LeggedRobot(BaseTask):
             self.command_ranges["lin_vel_x"][0] = np.clip(self.command_ranges["lin_vel_x"][0] - 0.5, -self.cfg.commands.max_curriculum, 0.)
             self.command_ranges["lin_vel_x"][1] = np.clip(self.command_ranges["lin_vel_x"][1] + 0.5, 0., self.cfg.commands.max_curriculum)
 
-    def update_force_curriculum(self, env_ids):
+    def update_curriculum(self, env_ids):
         if not self.cfg.env.add_force:
             if torch.mean(self.old_headheight[env_ids]) > self.cfg.domain_rand.th_height:
                 #self.force[env_ids] = (self.force[env_ids] - 100).clamp(0, np.inf)

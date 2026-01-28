@@ -70,7 +70,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
 
     class control(LeggedRobotCfg.control):
         # PD Drive parameters
-        control_type = 'P'
+        control_type = 'P'  # P: position, V: velocity, T: torques
         stiffness = {
             'hip': 150,
             'knee': 200,
@@ -237,9 +237,11 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         right_ankle_names = ['right_ankle_pitch']
 
     class rewards(LeggedRobotCfg.rewards):
+        is_gaussian = True  # 是否使用高斯函数计算奖励
+        only_positive_rewards = False  # 是否只计算正奖励
         base_height_target = 0.8  # 【调整】目标质心高度
-        target_head_height = 1.3  # 【调整】目标头部高度
-        target_head_margin = 1.3
+        target_head_height = 1.2  # 【调整】目标头部高度
+        target_head_margin = 1.2
         target_base_height_phase1 = 0.55
         target_base_height_phase2 = 0.55
         target_base_height_phase3 = 0.75
@@ -249,10 +251,8 @@ class BHR8FC2Cfg(LeggedRobotCfg):
 
         soft_dof_pos_limit = 0.9  # 软关节位置限制（安全范围比例）
         soft_dof_vel_limit = 0.9  # 软关节速度限制（安全范围比例）
-        only_positive_rewards = False  # 是否只计算正奖励
         orientation_sigma = 1  # 姿态奖励的敏感度（越小越严格）
         orientation_threshold = 0.99  # 姿态奖励阈值（姿态向量点积要大于 0.99）
-        is_gaussian = True  # 是否使用高斯函数计算奖励
         # 脚的位置与参考轨迹的误差敏感度（模仿学习用）
         left_foot_displacement_sigma = -2
         right_foot_displacement_sigma = -2
@@ -268,9 +268,10 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             task_head_height = 1
 
     class constraints(LeggedRobotCfg.rewards):
-        is_gaussian = True
-        target_head_height = 1.3
-        target_head_margin = 1.3
+        is_gaussian = True  # 是否使用高斯函数计算奖励
+        only_positive_rewards = False  # 是否只计算正奖励
+        target_head_height = 1.2
+        target_head_margin = 1.2
         orientation_height_threshold = 0.9
         target_base_height = 0.55
 
@@ -288,7 +289,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             regu_torques = -2.5e-6
             regu_joint_power = -2.5e-5
             regu_dof_vel = -1e-3
-            regu_joint_tracking_error = -0.00025
+            # regu_joint_tracking_error = -0.00025
             regu_dof_pos_limits = -100.0
             regu_dof_vel_limits = -1
 
@@ -348,6 +349,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         randomize_motor_strength = use_random
         motor_strength_range = [0.9, 1.1]
 
+        # 关节位置和速度初始化 _reset_dofs 中使用
         randomize_initial_joint_pos = True
         initial_joint_pos_scale = [0.9, 1.1]
         initial_joint_pos_offset = [-0.1, 0.1]
@@ -360,12 +362,18 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         max_delay_timesteps = 5
 
     class curriculum:
+        # 施加向上拉力
         pull_force = True
         force = 350
+        no_orientation = True  # 所有姿态都施加力
+
+        # 增加难度的头部高度阈值
+        threshold_head_height = 0.9
+
+    class limitation:
+        # 关节和基座速度限制
         dof_vel_limit = 300
         base_vel_limit = 20
-        threshold_height = 0.9
-        no_orientation = True
 
     class sim:
         dt = 0.005
@@ -408,4 +416,4 @@ class BHR8FC2CfgPPO(LeggedRobotCfgPPO):
         experiment_name = 'bhr8fc2_ground_prone'
         algorithm_class_name = 'PPO'
         init_at_random_ep_len = True
-        max_iterations = 12000  # number of policy updates
+        max_iterations = 30000  # number of policy updates

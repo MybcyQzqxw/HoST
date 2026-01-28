@@ -69,11 +69,12 @@ class LeggedRobot(BaseTask):
             Tuple of (observations, privileged_observations, rewards, dones, extras)
         """
         clip_actions = self.cfg.normalization.clip_actions
+        # 裁剪后动作
         self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
-        # step physics and render each frame
         self.render()
 
         for _ in range(self.cfg.control.decimation):
+            # unactuated_time 前无动作
             self.actions *= self.real_episode_length_buf.unsqueeze(1) > self.unactuated_time
             self.torques = self._compute_torques(self.actions).view(self.torques.shape)
             self.gym.set_dof_actuation_force_tensor(self.sim, gymtorch.unwrap_tensor(self.torques))
@@ -107,10 +108,11 @@ class LeggedRobot(BaseTask):
         return self.obs_buf, self.privileged_obs_buf, self.rew_buf, self.reset_buf, self.extras
 
     def post_physics_step(self):
-        """ check terminations, compute observations and rewards
-            calls self._post_physics_step_callback() for common computations 
-            calls self._draw_debug_vis() if needed
-        """
+        # 检查是否需要终止 self.check_termination()
+        # 计算奖励 self.compute_reward()
+        # 重置需要终止的环境 self.reset_idx(env_ids)
+        # 计算观测值 self.compute_observations()
+        # 包含 self._post_physics_step_callback()【不起任何作用，站起动作无 command】
         self.gym.refresh_actor_root_state_tensor(self.sim)
         self.gym.refresh_net_contact_force_tensor(self.sim)
         self.gym.refresh_rigid_body_state_tensor(self.sim)
@@ -130,14 +132,14 @@ class LeggedRobot(BaseTask):
 
         self._post_physics_step_callback()
 
-        # compute observations, rewards, resets, ...
         self.check_termination()
         self.compute_reward()
         env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
         self.reset_idx(env_ids)
-        # self.compute_motions()
-        self.compute_observations() # in some cases a simulation step might be required to refresh some obs (for example body positions)
+        # self.compute_motions()  # 不需要动作跟踪，不用计算动作
+        self.compute_observations()
 
+        # 存储历史数据
         self.last_last_actions[:] = self.last_actions[:]
         self.last_actions[:] = self.actions[:]
         self.last_dof_vel[:] = self.dof_vel[:]
@@ -146,60 +148,58 @@ class LeggedRobot(BaseTask):
         self.last_dof_pos[:] = self.dof_pos[:]
 
     def check_termination(self):
-        """ Check if environments need to be reset
-        """
-        self.reset_buf = torch.any(torch.norm(self.contact_forces[:, self.termination_contact_indices, :], dim=-1) > 1., dim=1)
+        # 检查是否需要重置环境
+        self.reset_buf = torch.any(torch.norm(self.contact_forces[:, self.termination_contact_indices, :], dim=-1) > 1.0, dim=1)
         self.time_out_buf = self.episode_length_buf > self.max_episode_length  # no terminal reward for time-outs
         self.reset_buf |= self.time_out_buf
 
-        self.dof_vel_out = (torch.abs(self.dof_vel.max(dim=1).values) > self.cfg.curriculum.dof_vel_limit) & (self.real_episode_length_buf > self.unactuated_time)
+        self.dof_vel_out = (torch.abs(self.dof_vel.max(dim=1).values) > self.cfg.limitation.dof_vel_limit) & (self.real_episode_length_buf > self.unactuated_time)
         self.reset_buf |= self.dof_vel_out
 
-        self.base_vel_out = (torch.norm(self.base_lin_vel[:, :3], dim=-1) > self.cfg.curriculum.base_vel_limit) & (self.real_episode_length_buf > self.unactuated_time)
+        self.base_vel_out = (torch.norm(self.base_lin_vel[:, :3], dim=-1) > self.cfg.limitation.base_vel_limit) & (self.real_episode_length_buf > self.unactuated_time)
         self.reset_buf |= self.base_vel_out
 
     def reset_idx(self, env_ids):
-        """ Reset some environments.
-            Calls self._reset_dofs(env_ids), self._reset_root_states(env_ids), and self._resample_commands(env_ids)
-            [Optional] calls self._update_terrain_curriculum(env_ids), self.update_command_curriculum(env_ids) and
-            Logs episode info
-            Resets some buffers
-
-        Args:
-            env_ids (list[int]): List of environment ids which must be reset
-        """
+        # 1. Reset some environments
+        # Calls self._reset_dofs(env_ids)
+        #       self._reset_root_states(env_ids)
+        #       self.update_curriculum(env_ids)
+        # 2. Logs episode info
+        # 3. Resets some buffers
+        # Args:
+        #     env_ids (list[int]): List of environment ids which must be reset
         if len(env_ids) == 0:
             return
-            
-        self.extras["episode"] = {}
+        self.extras['episode'] = {}
         self.extras['episode']['base_height'] = self.old_headheight[env_ids].mean()
 
         # reset robot states
         self._reset_dofs(env_ids)
         self._reset_root_states(env_ids)
 
-        self.update_force_curriculum(env_ids)
+        # 增加难度
+        self.update_curriculum(env_ids)
 
         # reset buffers
         self.last_actions[env_ids] = 0.
         self.last_last_actions[env_ids] = 0.
         self.last_dof_vel[env_ids] = 0.
-        self.last_last_dof_pos[env_ids] = 0
-        self.last_dof_pos[env_ids] = 0
+        self.last_last_dof_pos[env_ids] = 0.
+        self.last_dof_pos[env_ids] = 0.
         self.feet_air_time[env_ids] = 0.
         self.episode_length_buf[env_ids] = 0
         self.real_episode_length_buf[env_ids] = 0
         self.reset_buf[env_ids] = 1
-        self.old_headheight[env_ids] = 0
-        self.max_headheight[env_ids] = 0
-        self.feet_ori[env_ids] = 0
+        self.old_headheight[env_ids] = 0.
+        self.max_headheight[env_ids] = 0.
+        self.feet_ori[env_ids] = 0.
         # fill extras
         self.delay_buffer[:, env_ids, :] = 0.
 
         for key in self.episode_sums.keys():
             self.extras['episode']['rew_' + key] = torch.mean(self.episode_sums[key][env_ids]) / self.max_episode_length_s
             self.episode_sums[key][env_ids] = 0.
-        if self.cfg.commands.curriculum:
+        if self.cfg.commands.curriculum:  # 发送命令范围到算法
             self.extras['episode']['max_command_x'] = self.command_ranges['lin_vel_x'][1]
         # send timeout info to the algorithm
         if self.cfg.env.send_timeouts:
@@ -222,34 +222,28 @@ class LeggedRobot(BaseTask):
             self.delay_idx[env_ids] = torch.randint(low=0, high=self.cfg.domain_rand.max_delay_timesteps, size=(len(env_ids), ), device=self.device)
 
     def compute_reward(self):
-        """ Compute rewards
-            Calls each reward function which had a non-zero scale (processed in self._prepare_reward_function())
-            adds each terms to the episode sums and to the total reward
-            
-        【组合策略】：
-        1. rewards (task类): 先计算所有 reward 项，用【乘法】组合成 task 奖励
-           → 确保所有任务目标同时满足（AND逻辑）
-           
-        2. constraints: 计算所有 constraint 项，用【加法】累积惩罚
-           → 每个约束独立惩罚，可以部分违反（独立惩罚）
-           
-        3. 最终总奖励 = task奖励（乘法） + 各类约束（加法）
-           → 平衡任务完成度与约束满足度
-        """
+        # 计算奖励
+        # 调用每个具有非零尺度的奖励函数（在 self._prepare_reward_function() 中处理），将每个项添加到回合总和以及总奖励中
+        # 【组合策略】
+        # 1. rewards (task类): 先计算所有 reward 项，用【乘法】组合成 task 奖励
+        #    → 确保所有任务目标同时满足（AND逻辑）
+        # 2. constraints: 计算所有 constraint 项，用【加法】累积惩罚
+        #    → 每个约束独立惩罚，可以部分违反（独立惩罚）
+        # 3. 最终总奖励 = task奖励（乘法） + 各类约束（加法）
+        #    → 平衡任务完成度与约束满足度
         if not self.is_gaussian:
             raise NotImplementedError
         else:
             self.rew_buf[:, :] = 0
             task_group_index = self.reward_groups.index('task')
             self.rew_buf[:, task_group_index] = 1
-            
+
             # 【乘法组合】所有 rewards (task类) 项
             for i in range(len(self.reward_functions)):
                 name = self.reward_names[i]
                 rew = self.reward_functions[i]() * self.reward_scales[name]
                 if len(rew.shape) == 2 and rew.shape[1] == 1:
                     rew = rew.squeeze(1)
-                # print(name, rew.shape)
                 self.rew_buf[:, task_group_index] *= rew  # ← 注意这里是乘法！
                 self.episode_sums[name] += rew
 
@@ -263,29 +257,26 @@ class LeggedRobot(BaseTask):
             self.rew_buf[:, task_group_index] += rew  # ← 注意这里是加法！
             self.episode_sums[name] += rew
             if self.cfg.constraints.only_positive_rewards:
-                self.rew_buf[:, task_group_index] = torch.clip(self.rew_buf[:, task_group_index], min=0.)
+                self.rew_buf[:, task_group_index] = torch.clip(self.rew_buf[:, task_group_index], min=0.0)
 
-        if "termination" in self.constraint_scales:
-            rew = self._reward_termination() * self.constraint_scales["termination"]
+        if 'termination' in self.constraint_scales:  # 没有终止奖励
+            rew = self._reward_termination() * self.constraint_scales['termination']
             self.rew_buf += rew
-            self.episode_sums["termination"] += rew
+            self.episode_sums['termination'] += rew
 
+        # reward_groups = ['task', 'regu', 'style', 'target'] 四类汇总
         for rg in self.reward_groups:
             idx = self.reward_groups.index(rg)
             self.episode_sums[rg] = self.rew_buf[:, idx]
 
     def compute_observations(self):
-        """ Computes observations
-        """
-        current_obs = torch.cat((
-                                    self.base_ang_vel  * self.obs_scales.ang_vel,
-                                    self.projected_gravity,
-                                    self.dof_pos * self.obs_scales.dof_pos,
-                                    self.dof_vel * self.obs_scales.dof_vel,
-                                    self.actions,
-                                    self.action_rescale + (torch.rand_like(self.action_rescale) - 0.5) * 0.05,
-                                    ),dim=-1)
-            
+        current_obs = torch.cat((self.base_ang_vel * self.obs_scales.ang_vel,
+                                 self.projected_gravity,
+                                 self.dof_pos * self.obs_scales.dof_pos,
+                                 self.dof_vel * self.obs_scales.dof_vel,
+                                 self.actions,
+                                 self.action_rescale + (torch.rand_like(self.action_rescale) - 0.5) * 0.05,), dim=-1)
+
         if self.add_noise:
             current_obs += (2 * torch.rand_like(current_obs) - 1) * self.noise_scale_vec
 
@@ -401,63 +392,60 @@ class LeggedRobot(BaseTask):
         return props
 
     def _post_physics_step_callback(self):
-        """ Callback called before computing terminations, rewards, and observations
-            Default behaviour: Compute ang vel command based on target and heading, compute measured terrain heights and randomly push robots
-        """
-        # 
-        env_ids = (self.episode_length_buf % int(self.cfg.commands.resampling_time / self.dt)==0).nonzero(as_tuple=False).flatten()
+        # Callback called before computing terminations, rewards, and observations
+        # Default behaviour: Compute ang vel command based on target and heading, compute measured terrain heights and randomly push robots
+        # 不起任何作用，站起动作无 command
+        env_ids = (self.episode_length_buf % int(self.cfg.commands.resampling_time / self.dt) == 0).nonzero(as_tuple=False).flatten()
 
     def _compute_torques(self, actions):
-        """ Compute torques from actions.
-            Actions can be interpreted as position or velocity targets given to a PD controller, or directly as scaled torques.
-            [NOTE]: torques must have the same dimension as the number of DOFs, even if some DOFs are not actuated.
-
-        Args:
-            actions (torch.Tensor): Actions
-
-        Returns:
-            [torch.Tensor]: Torques sent to the simulation
-        """
-        #pd controller
+        # 根据动作计算扭矩。动作可以解释为传递给 PD 控制器的位置或速度目标，也可以直接解释为缩放后的扭矩。
+        # 注意：扭矩的维度必须与自由度数相同，即使某些自由度未被驱动
         actions_scaled = actions * self.action_rescale
-    
+
+        # self.dof_pos：形状为 (num_envs, num_dofs)
+        # 每个环境当前所有关节的位置。
+        # actions_scaled：形状为 (num_envs, num_dofs)
+        # 当前步输入的动作（经过缩放），每个环境每个关节一个值。
+        # self.delay_buffer：形状为 (max_delay_timesteps, num_envs, num_dofs)
+        # 用于存储每个环境最近 max_delay_timesteps 步的动作历史。
+        # 例如 delay_buffer[0] 是最早的，delay_buffer[-1] 是最新的。
+        # self.delay_idx：形状为 (num_envs,)
+        # 每个环境当前的“延迟步数”，即本步要取历史第几步的动作。
         self.joint_pos_target = self.dof_pos + actions_scaled
         if self.cfg.domain_rand.delay:
+            # 把最新的动作加到 delay_buffer 的最后，形成新的历史队列
             self.delay_buffer = torch.concat((self.delay_buffer[1:], actions_scaled.unsqueeze(0)), dim=0)
             self.joint_pos_target = self.dof_pos + self.delay_buffer[self.delay_idx, torch.arange(len(self.delay_idx)), :]
         else:
             self.joint_pos_target = self.dof_pos + actions_scaled
 
         control_type = self.cfg.control.control_type
-        if control_type=="P":
-            torques = self.p_gains * self.Kp_factors * (self.joint_pos_target - self.dof_pos) - self.d_gains *  self.Kd_factors * self.dof_vel
-        elif control_type=="V":
-            torques = self.p_gains*(actions_scaled - self.dof_vel) - self.d_gains*(self.dof_vel - self.last_dof_vel)/self.sim_params.dt
-        elif control_type=="T":
+        if control_type == 'P':
+            torques = self.p_gains * self.Kp_factors * (self.joint_pos_target - self.dof_pos) - self.d_gains * self.Kd_factors * self.dof_vel
+        elif control_type == 'V':
+            torques = self.p_gains * (actions_scaled - self.dof_vel) - self.d_gains * (self.dof_vel - self.last_dof_vel) / self.sim_params.dt
+        elif control_type == 'T':
             torques = actions_scaled
         else:
-            raise NameError(f"Unknown controller type: {control_type}")
-        torques = self.motor_strength *  torques + self.actuation_offset
-        
+            raise NameError(f'Unknown controller type: {control_type}')
+        torques = self.motor_strength * torques + self.actuation_offset
+
         return torch.clip(torques, -self.torque_limits, self.torque_limits)
 
     def _reset_dofs(self, env_ids):
-        """ Resets DOF position and velocities of selected environmments
-        Positions are randomly selected within 0.5:1.5 x default positions.
-        Velocities are set to zero.
-
-        Args:
-            env_ids (List[int]): Environemnt ids
-        """
+        # Resets DOF position and velocities of selected environmments
+        # Positions are randomly selected within 0.9:1.1 x default positions
+        # Velocities are set to zero
+        # Args:
+        #   env_ids (List[int]): Environemnt ids
         dof_upper = self.dof_pos_limits[:, 1].view(1, -1)
         dof_lower = self.dof_pos_limits[:, 0].view(1, -1)
-        
         if self.cfg.domain_rand.randomize_initial_joint_pos:
             init_dos_pos = self.default_dof_pos * torch_rand_float(self.cfg.domain_rand.initial_joint_pos_scale[0], self.cfg.domain_rand.initial_joint_pos_scale[1], (len(env_ids), self.num_real_dofs), device=self.device)
             init_dos_pos += torch_rand_float(self.cfg.domain_rand.initial_joint_pos_offset[0], self.cfg.domain_rand.initial_joint_pos_offset[1], (len(env_ids), self.num_real_dofs), device=self.device)
             self.dof_pos[env_ids] = torch.clip(init_dos_pos, dof_lower, dof_upper)
         else:
-            self.dof_pos[env_ids] = self.default_dof_pos * torch_rand_float(0.5, 1.5, (len(env_ids), self.num_real_dofs), device=self.device) + int(self.cfg.domain_rand.random_pose) * torch_rand_float(-1, 1, (len(env_ids), self.num_real_dofs), device=self.device) 
+            self.dof_pos[env_ids] = self.default_dof_pos * torch_rand_float(0.9, 1.1, (len(env_ids), self.num_real_dofs), device=self.device) + int(self.cfg.domain_rand.random_pose) * torch_rand_float(-1, 1, (len(env_ids), self.num_real_dofs), device=self.device)
             self.dof_vel[env_ids] = 0.
 
         self.dof_vel[env_ids] = 0.
@@ -468,17 +456,15 @@ class LeggedRobot(BaseTask):
                                               gymtorch.unwrap_tensor(env_ids_int32), len(env_ids_int32))
 
     def _reset_root_states(self, env_ids):
-        """ Resets ROOT states position and velocities of selected environmments
-            Sets base position based on the curriculum
-            Selects randomized base velocities within -0.5:0.5 [m/s, rad/s]
-        Args:
-            env_ids (List[int]): Environemnt ids
-        """
-        # base position
+        # Resets ROOT states position and velocities of selected environmments
+        # Sets base position based on the curriculum
+        # Selects randomized base velocities within -0.5:0.5 [m/s, rad/s]
+        # Args:
+        #   env_ids (List[int]): Environemnt ids
         if self.custom_origins:
             self.root_states[env_ids] = self.base_init_state
             self.root_states[env_ids, :3] += self.env_origins[env_ids]
-            self.root_states[env_ids, :2] += torch_rand_float(-1., 1., (len(env_ids), 2), device=self.device) # xy position within 1m of the center
+            self.root_states[env_ids, :2] += torch_rand_float(-1., 1., (len(env_ids), 2), device=self.device)  # xy position within 1m of the center
         else:
             self.root_states[env_ids] = self.base_init_state
             self.root_states[env_ids, :3] += self.env_origins[env_ids]
@@ -489,26 +475,17 @@ class LeggedRobot(BaseTask):
                                                      gymtorch.unwrap_tensor(env_ids_int32), len(env_ids_int32))
 
     def _push_robots(self):
-        """ Random pushes the robots. Emulates an impulse by setting a randomized base velocity. 
-        """
         max_vel = self.cfg.domain_rand.max_push_vel_xy
-        self.root_states[:, 7:10] = torch_rand_float(-max_vel, max_vel, (self.num_envs, 3), device=self.device) # lin vel x/y
+        self.root_states[:, 7:10] = torch_rand_float(-max_vel, max_vel, (self.num_envs, 3), device=self.device)  # lin vel x/y
         self.gym.set_actor_root_state_tensor(self.sim, gymtorch.unwrap_tensor(self.root_states))
 
     def _pull_robots(self):
-        """ Random pushes the robots. Emulates an impulse by setting a randomized base velocity. 
-        """
         max_vel = self.cfg.domain_rand.max_push_vel_z
-        self.root_states[:, 9] = torch_rand_float(0, max_vel, (self.num_envs,), device=self.device) # lin vel x/y
+        self.root_states[:, 9] = torch_rand_float(0, max_vel, (self.num_envs,), device=self.device)  # lin vel x/y
         self.gym.set_actor_root_state_tensor(self.sim, gymtorch.unwrap_tensor(self.root_states))
-   
-    def update_force_curriculum(self, env_ids):
-        """Update force curriculum based on performance.
-        
-        Args:
-            env_ids: Environment IDs to update
-        """
-        if torch.mean(self.old_headheight[env_ids]) > self.cfg.curriculum.threshold_height:
+
+    def update_curriculum(self, env_ids):
+        if torch.mean(self.old_headheight[env_ids]) > self.cfg.curriculum.threshold_head_height:
             self.force[env_ids] = (self.force[env_ids] - 20).clamp(0, np.inf)
             self.action_rescale[env_ids] = (self.action_rescale[env_ids] - 0.02).clamp(0.25, np.inf)
 
@@ -667,29 +644,27 @@ class LeggedRobot(BaseTask):
             self.delay_idx = torch.randint(low=0, high=self.cfg.domain_rand.max_delay_timesteps, size=(self.num_envs,), device=self.device)
 
     def _prepare_reward_function(self):
-        """准备奖励函数，筛选并初始化 rewards 和 constraints
-
-        【关键区别】rewards vs constraints：
-        1. **数学组合方式不同**：
-           - rewards (task类): 使用【乘法】组合 → self.rew_buf *= rew
-             所有 reward 项相乘，形成一个综合奖励
-             例如: task_reward = orientation × head_height × ...
-           - constraints: 使用【加法】组合 → self.rew_buf += rew
-             所有 constraint 项相加，各自独立惩罚
-             例如: total = task_reward + torques_penalty + collision_penalty + ...
-        2. **时间缩放不同**：
-           - rewards: 权重不变 (× 1)
-           - constraints: 权重乘以 dt (× 0.02)，使惩罚与控制频率匹配
-        3. **命名约定不同**：
-           - rewards: 名称如 "task_xxx" 表示任务奖励
-           - constraints: 名称如 "regu_xxx", "style_xxx", "target_xxx" 表示约束类型
-        4. **设计目的不同**：
-           - rewards: 核心任务目标（如站起来、保持平衡）
-           - constraints: 软约束惩罚（如力矩限制、碰撞惩罚、风格要求）
-        实际效果：
-        - task类奖励项互相关联（一个失败则整体失败）→ 用乘法
-        - 约束类惩罚项独立累积（每个独立惩罚）→ 用加法
-        """
+        # 准备奖励函数，筛选并初始化 rewards 和 constraints
+        # 【关键区别】rewards vs constraints：
+        # 1. **数学组合方式不同**：
+        #    - rewards (task类): 使用【乘法】组合 → self.rew_buf *= rew
+        #      所有 reward 项相乘，形成一个综合奖励
+        #      例如: task_reward = orientation × head_height × ...
+        #    - constraints: 使用【加法】组合 → self.rew_buf += rew
+        #      所有 constraint 项相加，各自独立惩罚
+        #      例如: total = task_reward + torques_penalty + collision_penalty + ...
+        # 2. **时间缩放不同**：
+        #    - rewards: 权重不变 (× 1)
+        #    - constraints: 权重乘以 dt (× 0.02)，使惩罚与控制频率匹配
+        # 3. **命名约定不同**：
+        #    - rewards: 名称如 "task_xxx" 表示任务奖励
+        #    - constraints: 名称如 "regu_xxx", "style_xxx", "target_xxx" 表示约束类型
+        # 4. **设计目的不同**：
+        #    - rewards: 核心任务目标（如站起来、保持平衡）
+        #    - constraints: 软约束惩罚（如力矩限制、碰撞惩罚、风格要求）
+        # 实际效果：
+        # - task类奖励项互相关联（一个失败则整体失败）→ 用乘法
+        # - 约束类惩罚项独立累积（每个独立惩罚）→ 用加法
         for key in list(self.reward_scales.keys()):
             scale = self.reward_scales[key]
             if scale == 0:
@@ -1055,67 +1030,64 @@ class LeggedRobot(BaseTask):
         self.env_origins[:, 2] = 0.0
 
     def _parse_cfg(self, cfg):
-        """解析配置文件，初始化关键参数。
+        # 解析配置文件，初始化关键参数。
 
-        Args:
-            cfg: 配置对象，包含所有环境参数
+        # Args:
+        #     cfg: 配置对象，包含所有环境参数
 
-        参数说明：
-        1. self.dt: 控制步长（秒）
-           - 来源: cfg.control.decimation * sim_params.dt
-           - decimation是物理模拟步数/控制步数的比值，sim_params.dt是物理仿真时间步长
-           - 作用: 决定机器人控制频率，用于计算速度、加速度等时间相关量
-           - 去向: 在step()、compute_reward()等方法中用于时间计算
-        2. self.obs_scales: 观测值缩放因子
-           - 来源: cfg.normalization.obs_scales (包含ang_vel, lin_vel, dof_pos, dof_vel等)
-           - 作用: 标准化观测值到合适的数值范围，提升神经网络训练稳定性
-           - 去向: compute_observations()中对角速度、关节位置/速度等进行缩放
-        3. self.reward_scales: 奖励函数权重字典
-           - 来源: cfg.rewards.scales 转换为字典
-           - 作用: 控制各个奖励项的权重（如方向、高度、关节限制等）
-           - 去向: _prepare_reward_function()中筛选非零奖励，compute_reward()中计算总奖励
-        4. self.constraint_scales: 约束惩罚权重字典
-           - 来源: cfg.constraints.scales 转换为字典
-           - 作用: 控制各个约束项的惩罚力度（如碰撞、力矩限制等）
-           - 去向: compute_reward()中添加约束惩罚项到总奖励
-        5. self.command_ranges: 命令范围字典
-           - 来源: cfg.commands.ranges (如lin_vel_x, lin_vel_y, ang_vel_yaw的范围)
-           - 作用: 定义速度命令的采样范围（用于运动任务）
-           - 去向: 当前代码中主要用于课程学习和命令生成（如果启用）
-        6. self.max_episode_length_s: 回合最大时长（秒）
-           - 来源: cfg.env.episode_length_s
-           - 作用: 设置每个训练回合的最大持续时间
-           - 去向: 用于计算max_episode_length（步数）
-        7. self.max_episode_length: 回合最大步数
-           - 来源: max_episode_length_s / dt 向上取整
-           - 作用: 控制何时触发超时重置
-           - 去向: check_termination()中判断是否超时 (episode_length_buf > max_episode_length)
-        8. cfg.domain_rand.push_interval: 随机推动间隔（步数）
-           - 来源: push_interval_s / dt 向上取整
-           - 作用: 将秒数转换为仿真步数，控制随机外力施加频率（domain randomization）
-           - 去向: 用于增强训练鲁棒性的随机扰动
-        """
+        # 参数说明：
+        # 1. self.dt: 控制步长（秒）
+        #    - 来源: cfg.control.decimation * sim_params.dt
+        #    - decimation是物理模拟步数/控制步数的比值，sim_params.dt是物理仿真时间步长
+        #    - 作用: 决定机器人控制频率，用于计算速度、加速度等时间相关量
+        #    - 去向: 在step()、compute_reward()等方法中用于时间计算
+        # 2. self.obs_scales: 观测值缩放因子
+        #    - 来源: cfg.normalization.obs_scales (包含ang_vel, lin_vel, dof_pos, dof_vel等)
+        #    - 作用: 标准化观测值到合适的数值范围，提升神经网络训练稳定性
+        #    - 去向: compute_observations()中对角速度、关节位置/速度等进行缩放
+        # 3. self.reward_scales: 奖励函数权重字典
+        #    - 来源: cfg.rewards.scales 转换为字典
+        #    - 作用: 控制各个奖励项的权重（如方向、高度、关节限制等）
+        #    - 去向: _prepare_reward_function()中筛选非零奖励，compute_reward()中计算总奖励
+        # 4. self.constraint_scales: 约束惩罚权重字典
+        #    - 来源: cfg.constraints.scales 转换为字典
+        #    - 作用: 控制各个约束项的惩罚力度（如碰撞、力矩限制等）
+        #    - 去向: compute_reward()中添加约束惩罚项到总奖励
+        # 5. self.command_ranges: 命令范围字典
+        #    - 来源: cfg.commands.ranges (如lin_vel_x, lin_vel_y, ang_vel_yaw的范围)
+        #    - 作用: 定义速度命令的采样范围（用于运动任务）
+        #    - 去向: 当前代码中主要用于课程学习和命令生成（如果启用）
+        # 6. self.max_episode_length_s: 回合最大时长（秒）
+        #    - 来源: cfg.env.episode_length_s
+        #    - 作用: 设置每个训练回合的最大持续时间
+        #    - 去向: 用于计算max_episode_length（步数）
+        # 7. self.max_episode_length: 回合最大步数
+        #    - 来源: max_episode_length_s / dt 向上取整
+        #    - 作用: 控制何时触发超时重置
+        #    - 去向: check_termination()中判断是否超时 (episode_length_buf > max_episode_length)
+        # 8. cfg.domain_rand.push_interval: 随机推动间隔（步数）
+        #    - 来源: push_interval_s / dt 向上取整
+        #    - 作用: 将秒数转换为仿真步数，控制随机外力施加频率（domain randomization）
+        #    - 去向: 用于增强训练鲁棒性的随机扰动
         self.dt = self.cfg.control.decimation * self.sim_params.dt
         self.obs_scales = self.cfg.normalization.obs_scales
-        """
-        【重要】rewards / constraints 配置结构说明：
+        # 【重要】rewards / constraints 配置结构说明：
 
-        cfg.rewards (外层类) 包含两类参数：
-          1. cfg.rewards.scales (内层类) - 各奖励项的权重系数
-             例如：termination=-0.0, torques=-0.00001, orientation=-0.0
-             作用：控制每个奖励项在总奖励中的比重（类似loss权重）
-             使用：仅在此处提取为字典，后续在 _prepare_reward_function() 中筛选非零项
-          2. cfg.rewards 的其他属性 (外层参数) - 奖励计算的配置参数
-             例如：tracking_sigma=0.25, soft_dof_pos_limit=1.0, base_height_target=1.0
-             作用：各奖励函数内部计算时使用的超参数
-             使用：在各个 _reward_xxx() 函数中直接访问 self.cfg.rewards.xxx
-             示例：
-               - _reward_tracking_lin_vel() 中用 self.cfg.rewards.tracking_sigma
-               - _reward_base_height() 中用 self.cfg.rewards.base_height_target
-               - _reward_dof_pos_limits() 中用 self.cfg.rewards.soft_dof_pos_limit
+        # cfg.rewards (外层类) 包含两类参数：
+        #   1. cfg.rewards.scales (内层类) - 各奖励项的权重系数
+        #      例如：termination=-0.0, torques=-0.00001, orientation=-0.0
+        #      作用：控制每个奖励项在总奖励中的比重（类似loss权重）
+        #      使用：仅在此处提取为字典，后续在 _prepare_reward_function() 中筛选非零项
+        #   2. cfg.rewards 的其他属性 (外层参数) - 奖励计算的配置参数
+        #      例如：tracking_sigma=0.25, soft_dof_pos_limit=1.0, base_height_target=1.0
+        #      作用：各奖励函数内部计算时使用的超参数
+        #      使用：在各个 _reward_xxx() 函数中直接访问 self.cfg.rewards.xxx
+        #      示例：
+        #        - _reward_tracking_lin_vel() 中用 self.cfg.rewards.tracking_sigma
+        #        - _reward_base_height() 中用 self.cfg.rewards.base_height_target
+        #        - _reward_dof_pos_limits() 中用 self.cfg.rewards.soft_dof_pos_limit
 
-        分离"权重"和"参数"使配置更清晰，便于调整奖励权重而不影响内部计算逻辑，constraints 同理
-        """
+        # 分离"权重"和"参数"使配置更清晰，便于调整奖励权重而不影响内部计算逻辑，constraints 同理
         self.reward_scales = class_to_dict(self.cfg.rewards.scales)
         self.constraint_scales = class_to_dict(self.cfg.constraints.scales)
         self.command_ranges = class_to_dict(self.cfg.commands.ranges)

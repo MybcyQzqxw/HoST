@@ -172,10 +172,10 @@ class LeggedRobot(BaseTask):
         self.time_out_buf = self.episode_length_buf > self.max_episode_length # no terminal reward for time-outs
         self.reset_buf |= self.time_out_buf
 
-        self.dof_vel_out = (torch.abs(self.dof_vel.max(dim=1).values) > self.cfg.curriculum.dof_vel_limit) & (self.real_episode_length_buf > self.unactuated_time)
+        self.dof_vel_out = (torch.abs(self.dof_vel.max(dim=1).values) > self.cfg.limitation.dof_vel_limit) & (self.real_episode_length_buf > self.unactuated_time)
         self.reset_buf |= self.dof_vel_out
 
-        self.base_vel_out = (torch.norm(self.base_lin_vel[:, :3], dim=-1) > self.cfg.curriculum.base_vel_limit) & (self.real_episode_length_buf > self.unactuated_time)
+        self.base_vel_out = (torch.norm(self.base_lin_vel[:, :3], dim=-1) > self.cfg.limitation.base_vel_limit) & (self.real_episode_length_buf > self.unactuated_time)
         self.reset_buf |= self.base_vel_out
 
         self.low_base_height = self.root_states[:, 2] < 0.2
@@ -204,7 +204,7 @@ class LeggedRobot(BaseTask):
         self._reset_dofs(env_ids)
         self._reset_root_states(env_ids)
 
-        self.update_force_curriculum(env_ids)
+        self.update_curriculum(env_ids)
 
         # reset buffers
         self.last_actions[env_ids] = 0.
@@ -535,8 +535,8 @@ class LeggedRobot(BaseTask):
         self.root_states[:, 9] = torch_rand_float(0, max_vel, (self.num_envs,), device=self.device) # lin vel x/y
         self.gym.set_actor_root_state_tensor(self.sim, gymtorch.unwrap_tensor(self.root_states))
    
-    def update_force_curriculum(self, env_ids):
-        if torch.mean(self.old_headheight[env_ids]) > self.cfg.curriculum.threshold_height:
+    def update_curriculum(self, env_ids):
+        if torch.mean(self.old_headheight[env_ids]) > self.cfg.curriculum.threshold_head_height:
             self.force[env_ids] = (self.force[env_ids] - 20).clamp(0, np.inf)
             self.action_rescale[env_ids] = (self.action_rescale[env_ids] - 0.02).clamp(0.25, np.inf)
 
