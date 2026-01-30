@@ -107,6 +107,11 @@ cd rsl_rl && pip install -e . && cd ..
 cd legged_gym &&  pip install -e . && cd .. 
 ```
 
+补充安装python shared library：
+```bash
+conda install -c conda-forge python=3.8 python_abi=3.8 -y
+```
+
 ### 错误处理
 关于潜在的安装错误，请参考[此文档](docs/ERROR.md)获取解决方案。
 
