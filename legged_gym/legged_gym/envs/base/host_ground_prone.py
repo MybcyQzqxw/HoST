@@ -1265,7 +1265,7 @@ class LeggedRobot(BaseTask):
         right_foot_pos = self.rigid_body_states[:, self.right_foot_indices, :3].clone()
         feet_distances = torch.norm(left_foot_pos - right_foot_pos, dim=-1)
         reward = tolerance(feet_distances, [0, 0.4], 0.38, 0.05)
-        return reward
+        return reward.squeeze(1)
 
     def _reward_torques(self):
         return torch.sum(torch.square(self.torques), dim=1)
