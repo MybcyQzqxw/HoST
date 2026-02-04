@@ -485,7 +485,7 @@ class LeggedRobot(BaseTask):
         self.gym.set_actor_root_state_tensor(self.sim, gymtorch.unwrap_tensor(self.root_states))
 
     def update_curriculum(self, env_ids):
-        if torch.mean(self.old_headheight[env_ids]) > self.cfg.curriculum.threshold_head_height:
+        if torch.mean(self.old_baseheight[env_ids]) > self.cfg.curriculum.threshold_head_height:
             self.force[env_ids] = (self.force[env_ids] - 20).clamp(0, np.inf)
             self.action_rescale[env_ids] = (self.action_rescale[env_ids] - 0.02).clamp(0.25, np.inf)
 
