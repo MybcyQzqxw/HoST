@@ -297,6 +297,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             style_after2_right_foot_displacement = 2.5
             style_after2_no_forearm_contact = -50
             style_after2_no_knee_contact = -50
+            style_after2_foot_contact = -50
 
             # target reward
             target_target_base_height = 10

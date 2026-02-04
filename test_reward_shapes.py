@@ -98,6 +98,8 @@ def make_fake_instance(attr_names, num_envs=NUM_ENVS, num_dofs=NUM_DOFS, num_fee
     for name in attr_names:
         if name in ('base_lin_vel', 'base_ang_vel', 'projected_gravity'):
             setattr(f, name, torch.zeros(num_envs, 3))
+        elif name in ('num_bodies',):
+            setattr(f, name, num_bodies)
         elif name in ('root_states',):
             setattr(f, name, torch.zeros(num_envs, 13))
         elif name in ('dof_pos', 'dof_vel', 'actions', 'torques', 'last_dof_vel', 'last_actions', 'target_dof_pos'):
@@ -114,17 +116,21 @@ def make_fake_instance(attr_names, num_envs=NUM_ENVS, num_dofs=NUM_DOFS, num_fee
             setattr(f, name, torch.zeros(num_envs, num_bodies, 13))
         elif name.endswith('_indices'):
             # 常见索引应为 long tensor
-            if name.startswith('left_') or name.startswith('right_'):
-                # 左/右 单个索引，通常返回长度 1 的索引列表
-                setattr(f, name, torch.tensor([0], dtype=torch.long))
-            elif 'head' in name:
+            # 处理各种关节和刚体索引
+            if 'shoulder' in name or 'elbow' in name or 'hip' in name or 'knee' in name or 'ankle' in name or 'waist' in name:
+                # 关节索引通常是小数量的
                 setattr(f, name, torch.tensor([0], dtype=torch.long))
             elif 'foot' in name or 'feet' in name:
-                setattr(f, name, torch.arange(num_feet, dtype=torch.long))
-            elif 'dof' in name or 'joint' in name:
-                setattr(f, name, torch.arange(num_dofs, dtype=torch.long))
+                setattr(f, name, torch.tensor([0], dtype=torch.long))
+            elif 'head' in name or 'base' in name or 'keyframe' in name or 'thigh' in name:
+                setattr(f, name, torch.tensor([0], dtype=torch.long))
+            elif 'arm' in name or 'leg' in name:
+                # arm/leg joint indices 可能包含多个关节
+                setattr(f, name, torch.arange(min(4, num_dofs), dtype=torch.long))
+            elif 'penalis' in name or 'termination' in name:
+                setattr(f, name, torch.arange(min(8, num_bodies), dtype=torch.long))
             else:
-                setattr(f, name, torch.arange(min(num_bodies, 16), dtype=torch.long))
+                setattr(f, name, torch.tensor([0], dtype=torch.long))
         elif name.endswith('_index'):
             # 单一索引（int）
             setattr(f, name, 0)
@@ -149,28 +155,75 @@ def make_fake_instance(attr_names, num_envs=NUM_ENVS, num_dofs=NUM_DOFS, num_fee
             cfg.limitation = SimpleNamespace()
             cfg.env = SimpleNamespace()
             # 常用默认值（可根据需要扩展）
+            # Phase相关配置
             cfg.rewards.target_base_height_phase1 = 0.2
             cfg.rewards.target_base_height_phase2 = 0.25
             cfg.rewards.target_base_height_phase3 = 0.3
+            cfg.rewards.target_base_height = 0.8
             cfg.rewards.base_height_target = 0.3
-            cfg.rewards.orientation_sigma = 1.0
+            cfg.rewards.target_base_margin = 0.05
+            # Orientation相关
+            cfg.rewards.orientation_sigma = -1.0
             cfg.rewards.orientation_threshold = 0.1
+            cfg.rewards.target_orientation_sigma = -1.0
+            # Height相关
             cfg.rewards.target_head_height = 0.2
             cfg.rewards.target_head_margin = 0.1
+            cfg.rewards.target_base_height_sigma = -1.0
+            # DOF相关
             cfg.rewards.target_dof_pos_sigma = -1.0
+            cfg.rewards.soft_dof_pos_limit = 0.95
+            cfg.rewards.soft_dof_vel_limit = 0.9
+            cfg.rewards.soft_torque_limit = 0.9
+            # Displacement相关
             cfg.rewards.left_foot_displacement_sigma = -1.0
             cfg.rewards.right_foot_displacement_sigma = -1.0
-            cfg.rewards.soft_dof_pos_limit = 1.0
-            cfg.rewards.soft_dof_vel_limit = 1.0
-            cfg.rewards.soft_torque_limit = 1.0
+            cfg.rewards.after2_left_foot_displacement_sigma = -1.0
+            cfg.rewards.after2_right_foot_displacement_sigma = -1.0
+            # Contact相关
             cfg.rewards.max_contact_force = 100.0
+            # Tracking相关
             cfg.rewards.tracking_dof_sigma = 1.0
+            # Deviation相关
+            cfg.rewards.shoulder_roll_deviation_off_center_threshold = 0.1
+            cfg.rewards.shoulder_roll_deviation_inside_threshold = 0.1
+            cfg.rewards.shoulder_yaw_deviation_off_center_threshold = 0.1
+            cfg.rewards.shoulder_yaw_deviation_inside_threshold = 0.1
+            cfg.rewards.waist_deviation_threshold = 0.1
+            cfg.rewards.hip_yaw_deviation_off_center_threshold = 0.1
+            cfg.rewards.hip_yaw_deviation_inside_threshold = 0.1
+            cfg.rewards.hip_roll_deviation_off_center_threshold = 0.1
+            cfg.rewards.hip_roll_deviation_inside_threshold = 0.1
+            cfg.rewards.ankle_roll_deviation_off_center_threshold = 0.1
+            cfg.rewards.ankle_roll_deviation_inside_threshold = 0.1
+            # After2相关（phase2之后）
+            cfg.rewards.after2_base_ang_vel_xyz_sigma = -1.0
+            cfg.rewards.after2_base_lin_vel_xy_sigma = -1.0
+            cfg.rewards.after2_upper_body_deviation_sigma = -1.0
+            cfg.rewards.after2_lower_body_deviation_sigma = -1.0
+            cfg.rewards.after2_arm_pos_sigma = -1.0
+            cfg.rewards.after2_leg_ori_threshold = 0.8
+            cfg.rewards.after2_feet_distance_threshold = 0.3
+            cfg.rewards.after2_feet_height_var_sigma = -1.0
+            # Before1相关（phase1之前）
+            cfg.rewards.before1_thigh_ori_threshold = 0.5
+            cfg.rewards.before1_shank_ori_threshold = 0.5
+            # Before2相关（phase2之前）
+            cfg.rewards.before2_base_ang_vel_xz_sigma = -1.0
+            cfg.rewards.before2_base_lin_vel_y_sigma = -1.0
+            # After1 Before2相关（phase1和phase2之间）
+            cfg.rewards.after1_before2_shank_ori_threshold = 0.5
+            # Hip yaw var
             cfg.rewards.hip_yaw_var_sigma = -1.0
+            # Constraints
             cfg.constraints.post_task = False
             cfg.constraints.hip_yaw_var_sigma = -1.0
             cfg.constraints.only_positive_rewards = False
+            # Limitation
             cfg.limitation.dof_vel_limit = 1e3
             cfg.limitation.base_vel_limit = 1e3
+            cfg.limitation.soft_dof_vel_limit = 0.9
+            # Env
             cfg.env.num_dofs = num_dofs
             setattr(f, name, cfg)
         elif name == 'obs_scales':
@@ -198,10 +251,20 @@ def make_fake_instance(attr_names, num_envs=NUM_ENVS, num_dofs=NUM_DOFS, num_fee
             setattr(f, name, torch.arange(min(8, num_bodies), dtype=torch.long))
         elif name in ('feet_air_time', 'last_contacts'):
             setattr(f, name, torch.zeros(num_envs, num_feet))
-        elif name in ('last_last_actions', 'last_last_dof_pos', 'last_dof_pos', 'last_dof_vel', 'last_root_vel'):
+        elif name in ('last_last_actions',):
+            setattr(f, name, torch.zeros(num_envs, num_dofs))
+        elif name in ('last_last_dof_pos', 'last_dof_pos'):
+            setattr(f, name, torch.zeros(num_envs, num_dofs))
+        elif name in ('last_dof_vel', 'last_root_vel'):
             setattr(f, name, torch.zeros(num_envs, num_dofs))
         elif name == 'last_actions':
             setattr(f, name, torch.zeros(num_envs, num_dofs))
+        elif name in ('old_baseheight', 'max_baseheight', 'old_headheight', 'max_headheight'):
+            setattr(f, name, torch.zeros(num_envs, 1))
+        elif name in ('feet_ori',):
+            setattr(f, name, torch.zeros(num_envs, 1))
+        elif name in ('real_episode_length_buf',):
+            setattr(f, name, torch.zeros(num_envs))
         else:
             # 兜底为一维 num_envs 向量
             # 特殊字段 is_gaussian 应为布尔而非张量
@@ -312,19 +375,55 @@ def test_reward_function_shapes():
                     sn.target_base_height_phase2 = 0.25
                     sn.target_base_height_phase3 = 0.3
                     sn.base_height_target = 0.3
-                    sn.orientation_sigma = 1.0
+                    sn.target_base_height = 0.8
+                    sn.target_base_margin = 0.05
+                    sn.orientation_sigma = -1.0
                     sn.orientation_threshold = 0.1
+                    sn.target_orientation_sigma = -1.0
                     sn.target_head_height = 0.2
                     sn.target_head_margin = 0.1
+                    sn.target_base_height_sigma = -1.0
                     sn.target_dof_pos_sigma = -1.0
                     sn.left_foot_displacement_sigma = -1.0
                     sn.right_foot_displacement_sigma = -1.0
-                    sn.soft_dof_pos_limit = 1.0
-                    sn.soft_dof_vel_limit = 1.0
-                    sn.soft_torque_limit = 1.0
+                    sn.soft_dof_pos_limit = 0.95
+                    sn.soft_dof_vel_limit = 0.9
+                    sn.soft_torque_limit = 0.9
                     sn.max_contact_force = 100.0
                     sn.tracking_dof_sigma = 1.0
                     sn.hip_yaw_var_sigma = -1.0
+                    # Deviation thresholds
+                    sn.shoulder_roll_deviation_off_center_threshold = 0.1
+                    sn.shoulder_roll_deviation_inside_threshold = 0.1
+                    sn.shoulder_yaw_deviation_off_center_threshold = 0.1
+                    sn.shoulder_yaw_deviation_inside_threshold = 0.1
+                    sn.waist_deviation_threshold = 0.1
+                    sn.hip_yaw_deviation_off_center_threshold = 0.1
+                    sn.hip_yaw_deviation_inside_threshold = 0.1
+                    sn.hip_roll_deviation_off_center_threshold = 0.1
+                    sn.hip_roll_deviation_inside_threshold = 0.1
+                    sn.ankle_roll_deviation_off_center_threshold = 0.1
+                    sn.ankle_roll_deviation_inside_threshold = 0.1
+                    # After2 configs
+                    sn.after2_base_ang_vel_xyz_sigma = -1.0
+                    sn.after2_base_lin_vel_xy_sigma = -1.0
+                    sn.after2_upper_body_deviation_sigma = -1.0
+                    sn.after2_lower_body_deviation_sigma = -1.0
+                    sn.after2_arm_pos_sigma = -1.0
+                    sn.after2_leg_ori_threshold = 0.8
+                    sn.after2_feet_distance_threshold = 0.3
+                    sn.after2_feet_height_var_sigma = -1.0
+                    sn.after2_left_foot_displacement_sigma = -1.0
+                    sn.after2_right_foot_displacement_sigma = -1.0
+                    # Before1 configs
+                    sn.before1_thigh_ori_threshold = 0.5
+                    sn.before1_shank_ori_threshold = 0.5
+                    # Before2 configs
+                    sn.before2_base_ang_vel_xz_sigma = -1.0
+                    sn.before2_base_lin_vel_y_sigma = -1.0
+                    # After1 Before2 configs
+                    sn.after1_before2_shank_ori_threshold = 0.5
+                    # Constraints
                     sn.post_task = False
                     sn.only_positive_rewards = False
                     setattr(ns, sub, sn)
@@ -395,10 +494,64 @@ def test_reward_function_shapes():
 
     # 打印汇总
     max_name = max((len(r[0]) for r in results), default=20)
-    print('\n检测结果：')
+    print('\n' + '=' * 80)
+    print('奖励函数输出维度检测结果：')
+    print('=' * 80)
+    
+    # 统计
+    total = len(results)
+    ok_count = sum(1 for r in results if r[1] == 'OK')
+    error_count = sum(1 for r in results if r[1] == 'ERROR')
+    skipped_count = sum(1 for r in results if r[1] == 'SKIPPED')
+    
+    # 按状态分类打印
+    print(f'\n✓ 成功 ({ok_count}/{total}):')
+    print('-' * 80)
     for name, status, info in results:
-        print(f'{name:<{max_name}}  {status:6s}  {info}')
+        if status == 'OK':
+            # 检查输出维度是否正确（应该是 (NUM_ENVS,) 或标量）
+            if isinstance(info, tuple):
+                if info == (NUM_ENVS,):
+                    indicator = '✓'
+                else:
+                    indicator = '⚠'  # 维度不符合预期
+            else:
+                indicator = '?'  # 非张量输出
+            print(f'  {indicator} {name:<{max_name}}  {info}')
+    
+    if error_count > 0:
+        print(f'\n✗ 错误 ({error_count}/{total}):')
+        print('-' * 80)
+        for name, status, info in results:
+            if status == 'ERROR':
+                print(f'  ✗ {name:<{max_name}}  {info}')
+    
+    if skipped_count > 0:
+        print(f'\n⊘ 跳过 ({skipped_count}/{total}):')
+        print('-' * 80)
+        for name, status, info in results:
+            if status == 'SKIPPED':
+                print(f'  ⊘ {name:<{max_name}}  {info}')
+    
+    print('\n' + '=' * 80)
+    print(f'总结: {ok_count} 成功, {error_count} 错误, {skipped_count} 跳过 / 共 {total} 个')
+    print('=' * 80)
+    
+    # 检查是否所有成功的函数都返回正确的形状
+    wrong_shape = []
+    for name, status, info in results:
+        if status == 'OK' and isinstance(info, tuple):
+            if info != (NUM_ENVS,):
+                wrong_shape.append((name, info))
+    
+    if wrong_shape:
+        print(f'\n⚠ 警告: {len(wrong_shape)} 个函数返回了非预期的形状（应为 ({NUM_ENVS},)）:')
+        for name, shape in wrong_shape:
+            print(f'  {name}: {shape}')
+    
+    return ok_count == total and len(wrong_shape) == 0
 
 
 if __name__ == '__main__':
-    test_reward_function_shapes()
+    success = test_reward_function_shapes()
+    sys.exit(0 if success else 1)
