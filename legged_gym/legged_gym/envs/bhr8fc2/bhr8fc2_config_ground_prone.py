@@ -134,18 +134,32 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         penalize_contacts_on = ['head', 'shoulder', 'hip']
         terminate_after_contacts_on = []
 
-        base_name = 'torso_link'
+        base_name = 'torso'
         head_name = 'head'
+        foot_name = 'ankle_roll'
         keyframe_name = ''  # BHR8FC2 没有专门的 keyframe links
         left_shoulder_name = 'left_shoulder'
         right_shoulder_name = 'right_shoulder'
+        left_shoulder_pitch_name = 'left_shoulder_pitch'
+        right_shoulder_pitch_name = 'right_shoulder_pitch'
+        left_shoulder_roll_name = 'left_shoulder_roll'
+        right_shoulder_roll_name = 'right_shoulder_roll'
+        left_shoulder_yaw_name = 'left_shoulder_yaw'
+        right_shoulder_yaw_name = 'right_shoulder_yaw'
+        left_elbow_name = 'left_elbow'
+        right_elbow_name = 'right_elbow'
+        left_hip_yaw_name = 'left_hip_yaw'
+        right_hip_yaw_name = 'right_hip_yaw'
+        left_hip_roll_name = 'left_hip_roll'
+        right_hip_roll_name = 'right_hip_roll'
         left_thigh_name = 'left_hip_pitch'
         right_thigh_name = 'right_hip_pitch'
         left_knee_name = 'left_knee'
         right_knee_name = 'right_knee'
+        left_ankle_pitch_name = 'left_ankle_pitch'
+        right_ankle_pitch_name = 'right_ankle_pitch'
         left_foot_name = 'left_ankle_roll'
         right_foot_name = 'right_ankle_roll'
-        foot_name = 'ankle_roll'
 
         left_shoulder_pitch_joints = ['left_shoulder_pitch_joint']
         right_shoulder_pitch_joints = ['right_shoulder_pitch_joint']
@@ -169,71 +183,32 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         left_ankle_roll_joints = ['left_ankle_roll_joint']
         right_ankle_roll_joints = ['right_ankle_roll_joint']
 
-        trunk_names = ['torso']
-        tracking_body_names = []
-
-        left_upper_body_names = ['left_shoulder_pitch',
-                                 'left_shoulder_roll',
-                                 'left_shoulder_yaw',
-                                 'left_elbow']
-        right_upper_body_names = ['right_shoulder_pitch',
-                                  'right_shoulder_roll',
-                                  'right_shoulder_yaw',
-                                  'right_elbow']
-        left_lower_body_names = ['left_hip_yaw',
-                                 'left_hip_roll',
-                                 'left_hip_pitch',
-                                 'left_knee',
-                                 'left_ankle_pitch',
-                                 'left_ankle_roll']
-        right_lower_body_names = ['right_hip_yaw',
-                                  'right_hip_roll',
-                                  'right_hip_pitch',
-                                  'right_knee',
-                                  'right_ankle_pitch',
-                                  'right_ankle_roll']
-        left_ankle_names = ['left_ankle_pitch']
-        right_ankle_names = ['right_ankle_pitch']
-
     class rewards(LeggedRobotCfg.rewards):
         is_gaussian = True  # 是否使用高斯函数计算奖励
         only_positive_rewards = False  # 是否只计算正奖励
-        base_height_target = 0.8  # 【调整】目标质心高度
-        target_head_height = 1.2  # 【调整】目标头部高度
-        target_head_margin = 1.2
-        target_base_height_phase1 = 0.55
-        target_base_height_phase2 = 0.55
-        target_base_height_phase3 = 0.75
-
-        base_height_sigma = 0.25
-        tracking_dof_sigma = 0.25
-
-        soft_dof_pos_limit = 0.9  # 软关节位置限制（安全范围比例）
-        soft_dof_vel_limit = 0.9  # 软关节速度限制（安全范围比例）
-        orientation_sigma = 1  # 姿态奖励的敏感度（越小越严格）
-        orientation_threshold = 0.99  # 姿态奖励阈值（姿态向量点积要大于 0.99）
-        # 脚的位置与参考轨迹的误差敏感度（模仿学习用）
-        left_foot_displacement_sigma = -2
-        right_foot_displacement_sigma = -2
-        target_dof_pos_sigma = -0.1  # 关节位置目标奖励敏感度
-        tracking_sigma = 0.25  # 速度追踪奖励敏感度
-
         reward_groups = ['task', 'regu', 'style', 'target']
         num_reward_groups = len(reward_groups)
         reward_group_weights = [1, 0.1, 1, 1]
 
+        target_base_height = 0.8  # 【调整】目标质心高度
+        target_base_height_phase1 = 0.3
+        target_base_height_phase2 = 0.5
+        target_base_height_phase3 = 0.7
+
+        # task reward
+        target_base_margin = 0.8
+        orientation_threshold = 0.99
+
         class scales:
+            task_base_height = 1
             task_orientation = 1
-            task_head_height = 1
 
     class constraints(LeggedRobotCfg.rewards):
         is_gaussian = True  # 是否使用高斯函数计算奖励
         only_positive_rewards = False  # 是否只计算正奖励
-        target_head_height = 1.2
-        target_head_margin = 1.2
-        orientation_height_threshold = 0.9
-        target_base_height = 0.55
+        post_task = False
 
+        # style reward
         shoulder_roll_deviation_off_center_threshold = 0.7
         shoulder_roll_deviation_inside_threshold = 0.1
         shoulder_yaw_deviation_off_center_threshold = 1.0
@@ -245,47 +220,87 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         hip_roll_deviation_inside_threshold = 0.3
         ankle_roll_deviation_off_center_threshold = 0.3
         ankle_roll_deviation_inside_threshold = 0.2
+        # ----- phase related
+        # ---------- before1
+        before1_thigh_ori_threshold = 0.8
+        before1_shank_ori_threshold = 0.9
+        # ---------- before2
+        before2_base_ang_vel_xz_sigma = -2
+        before2_base_lin_vel_y_sigma = -5
+        # ---------- after1_before2
+        after1_before2_shank_ori_threshold = 0.7
+        # ---------- after2
+        after2_base_ang_vel_xyz_sigma = -2
+        after2_base_lin_vel_xy_sigma = -5
+        after2_upper_body_deviation_sigma = -2
+        after2_lower_body_deviation_sigma = -2
+        after2_arm_pos_sigma = -2
+        after2_leg_ori_threshold = 0.95
+        after2_feet_distance_threshold = 0.3
+        after2_feet_height_var_sigma = -2
+        after2_left_foot_displacement_sigma = -2
+        after2_right_foot_displacement_sigma = -2
 
-        left_foot_displacement_sigma = -2
-        right_foot_displacement_sigma = -2
-        hip_yaw_var_sigma = -2
-        target_dof_pos_sigma = -0.1
-        post_task = False
+        # target reward
+        target_base_height_sigma = -20
+        target_orientation_sigma = -5
 
         class scales:
             # regularization reward
             regu_dof_acc = -2.5e-7
+            regu_dof_vel = -1e-3
             regu_action_rate = -0.01
             regu_smoothness = -0.01
             regu_torques = -2.5e-6
             regu_joint_power = -2.5e-5
-            regu_dof_vel = -1e-3
-            # regu_joint_tracking_error = -0.00025
             regu_dof_pos_limits = -100.0
             regu_dof_vel_limits = -1
+            regu_torque_limits = -1
 
-            # ----- style reward
+            # style reward
             style_shoulder_roll_deviation = -10
             style_shoulder_yaw_deviation = -10
             style_waist_deviation = 0  # BHR8FC2没有腰部关节，禁用
             style_hip_yaw_deviation = -10
             style_hip_roll_deviation = -10
             style_ankle_roll_deviation = -10
-            # ---------- after phase2
-            style_left_foot_displacement = 2.5
-            style_right_foot_displacement = 2.5
-            style_thigh_ori = 10
-            style_feet_distance = -10
-            style_style_ang_vel_xy = 25
+            style_no_head_contact = -50
+            style_no_shoulder_contact = -50
+            style_no_torso_contact = -50
+            style_no_hip_contact = -50
+            style_forearm_knee_contact_mismatch = -50
+            style_tripod_contact = -50
+            style_lower_body_contact = -50
+            # ----- phase related
+            # ---------- before1
+            style_before1_forearm_contact = 10
+            style_before1_knee_contact = 10
+            style_before1_foot_contact = 10
+            style_before1_thigh_ori = 10
+            style_before1_shank_ori = 10
+            # ---------- before2
+            style_before2_base_ang_vel_xz = 10
+            style_before2_base_lin_vel_y = 10
+            # ---------- after1_before2
+            style_after1_before2_base_ang_vel_y = 10
+            style_after1_before2_shank_ori = 10
+            # ---------- after2
+            style_after2_base_ang_vel_xyz = 10
+            style_after2_base_lin_vel_xy = 10
+            style_after2_upper_body_deviation = 10
+            style_after2_lower_body_deviation = 10
+            style_after2_arm_pos = 5
+            style_after2_leg_ori = 10
+            style_after2_feet_distance = 10
+            style_after2_feet_height_var = 10
+            style_after2_left_foot_displacement = 2.5
+            style_after2_right_foot_displacement = 2.5
+            style_after2_no_forearm_contact = -50
+            style_after2_no_knee_contact = -50
 
-            # post-task reward
-            target_ang_vel_xy = 10
-            target_lin_vel_xy = 10
-            target_feet_height_var = 2.5
-            target_target_upper_dof_pos = 10
-            target_lower_body_deviation = 10
-            target_target_orientation = 10
+            # target reward
             target_target_base_height = 10
+            target_target_orientation = 10
 
     class domain_rand:
         use_random = True
@@ -336,7 +351,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
     class curriculum:
         # 施加向上拉力
         pull_force = True
-        force = 350
+        force = 200
         no_orientation = True  # 所有姿态都施加力
 
         # 增加难度的头部高度阈值
@@ -346,6 +361,8 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         # 关节和基座速度限制
         dof_vel_limit = 300
         base_vel_limit = 20
+        soft_dof_pos_limit = 0.9  # 软关节位置限制（安全范围比例）
+        soft_dof_vel_limit = 0.9  # 软关节速度限制（安全范围比例）
 
     class sim:
         dt = 0.005
