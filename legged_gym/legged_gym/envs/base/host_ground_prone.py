@@ -836,15 +836,17 @@ class LeggedRobot(BaseTask):
         for i in range(len(base_name)):
             self.base_indices[i] = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], base_name[i])
 
-        self.head_names = [s for s in body_names if self.cfg.asset.head_name in s]
-        self.head_indices = torch.zeros(len(self.head_names), dtype=torch.long, device=self.device)
-        for i, name in enumerate(self.head_names):
-            self.head_indices[i] = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], name)
+        head_names = [s for s in body_names if self.cfg.asset.head_name in s]
+        self.head_names = head_names
+        self.head_indices = torch.zeros(len(head_names), dtype=torch.long, device=self.device, requires_grad=False)
+        for i in range(len(head_names)):
+            self.head_indices[i] = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], head_names[i])
 
-        self.keyframe_names = [s for s in body_names if self.cfg.asset.keyframe_name in s]
-        self.keyframe_indices = torch.zeros(len(self.keyframe_names), dtype=torch.long, device=self.device)
-        for i, name in enumerate(self.keyframe_names):
-            self.keyframe_indices[i] = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], name)
+        keyframe_names = [s for s in body_names if self.cfg.asset.keyframe_name in s]
+        self.keyframe_names = keyframe_names
+        self.keyframe_indices = torch.zeros(len(keyframe_names), dtype=torch.long, device=self.device, requires_grad=False)
+        for i in range(len(keyframe_names)):
+            self.keyframe_indices[i] = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], keyframe_names[i])
 
         left_shoulder_names = [s for s in body_names if self.cfg.asset.left_shoulder_name in s and 'keyframe' not in s]
         right_shoulder_names = [s for s in body_names if self.cfg.asset.right_shoulder_name in s and 'keyframe' not in s]
@@ -883,6 +885,14 @@ class LeggedRobot(BaseTask):
             self.right_foot_indices[i] = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], right_foot_names[i])
 
         # 下面开始录入各个关节的索引
+        self.left_shoulder_pitch_joint_indices = torch.zeros(len(self.cfg.asset.left_shoulder_pitch_joints), dtype=torch.long, device=self.device, requires_grad=False)
+        for i in range(len(self.cfg.asset.left_shoulder_pitch_joints)):
+            self.left_shoulder_pitch_joint_indices[i] = self.dof_names.index(self.cfg.asset.left_shoulder_pitch_joints[i])
+        self.right_shoulder_pitch_joint_indices = torch.zeros(len(self.cfg.asset.right_shoulder_pitch_joints), dtype=torch.long, device=self.device, requires_grad=False)
+        for i in range(len(self.cfg.asset.right_shoulder_pitch_joints)):
+            self.right_shoulder_pitch_joint_indices[i] = self.dof_names.index(self.cfg.asset.right_shoulder_pitch_joints[i])
+        self.shoulder_pitch_joint_indices = torch.cat((self.left_shoulder_pitch_joint_indices, self.right_shoulder_pitch_joint_indices))
+
         self.left_shoulder_roll_joint_indices = torch.zeros(len(self.cfg.asset.left_shoulder_roll_joints), dtype=torch.long, device=self.device, requires_grad=False)
         for i in range(len(self.cfg.asset.left_shoulder_roll_joints)):
             self.left_shoulder_roll_joint_indices[i] = self.dof_names.index(self.cfg.asset.left_shoulder_roll_joints[i])
@@ -890,6 +900,22 @@ class LeggedRobot(BaseTask):
         for i in range(len(self.cfg.asset.right_shoulder_roll_joints)):
             self.right_shoulder_roll_joint_indices[i] = self.dof_names.index(self.cfg.asset.right_shoulder_roll_joints[i])
         self.shoulder_roll_joint_indices = torch.cat((self.left_shoulder_roll_joint_indices, self.right_shoulder_roll_joint_indices))
+
+        self.left_shoulder_yaw_joint_indices = torch.zeros(len(self.cfg.asset.left_shoulder_yaw_joints), dtype=torch.long, device=self.device, requires_grad=False)
+        for i in range(len(self.cfg.asset.left_shoulder_yaw_joints)):
+            self.left_shoulder_yaw_joint_indices[i] = self.dof_names.index(self.cfg.asset.left_shoulder_yaw_joints[i])
+        self.right_shoulder_yaw_joint_indices = torch.zeros(len(self.cfg.asset.right_shoulder_yaw_joints), dtype=torch.long, device=self.device, requires_grad=False)
+        for i in range(len(self.cfg.asset.right_shoulder_yaw_joints)):
+            self.right_shoulder_yaw_joint_indices[i] = self.dof_names.index(self.cfg.asset.right_shoulder_yaw_joints[i])
+        self.shoulder_yaw_joint_indices = torch.cat((self.left_shoulder_yaw_joint_indices, self.right_shoulder_yaw_joint_indices))
+
+        self.left_elbow_joint_indices = torch.zeros(len(self.cfg.asset.left_elbow_joints), dtype=torch.long, device=self.device, requires_grad=False)
+        for i in range(len(self.cfg.asset.left_elbow_joints)):
+            self.left_elbow_joint_indices[i] = self.dof_names.index(self.cfg.asset.left_elbow_joints[i])
+        self.right_elbow_joint_indices = torch.zeros(len(self.cfg.asset.right_elbow_joints), dtype=torch.long, device=self.device, requires_grad=False)
+        for i in range(len(self.cfg.asset.right_elbow_joints)):
+            self.right_elbow_joint_indices[i] = self.dof_names.index(self.cfg.asset.right_elbow_joints[i])
+        self.elbow_joint_indices = torch.cat((self.left_elbow_joint_indices, self.right_elbow_joint_indices))
 
         self.waist_joint_indices = torch.zeros(len(self.cfg.asset.waist_joints), dtype=torch.long, device=self.device, requires_grad=False)
         for i in range(len(self.cfg.asset.waist_joints)):
@@ -919,32 +945,47 @@ class LeggedRobot(BaseTask):
             self.right_hip_pitch_joint_indices[i] = self.dof_names.index(self.cfg.asset.right_hip_pitch_joints[i])
         self.hip_pitch_joint_indices = torch.cat((self.left_hip_pitch_joint_indices, self.right_hip_pitch_joint_indices))
 
-        self.all_hip_joint_indices = torch.cat([self.hip_yaw_joint_indices, self.hip_roll_joint_indices, self.hip_pitch_joint_indices])
-
         self.left_knee_joint_indices = torch.zeros(len(self.cfg.asset.left_knee_joints), dtype=torch.long, device=self.device, requires_grad=False)
         for i in range(len(self.cfg.asset.left_knee_joints)):
             self.left_knee_joint_indices[i] = self.dof_names.index(self.cfg.asset.left_knee_joints[i])
         self.right_knee_joint_indices = torch.zeros(len(self.cfg.asset.right_knee_joints), dtype=torch.long, device=self.device, requires_grad=False)
         for i in range(len(self.cfg.asset.right_knee_joints)):
             self.right_knee_joint_indices[i] = self.dof_names.index(self.cfg.asset.right_knee_joints[i])
+        self.knee_joint_indices = torch.cat((self.left_knee_joint_indices, self.right_knee_joint_indices))
 
-        self.knee_joint_indices = torch.zeros(len(self.cfg.asset.knee_joints), dtype=torch.long, device=self.device, requires_grad=False)
-        for i in range(len(self.cfg.asset.knee_joints)):
-            self.knee_joint_indices[i] = self.dof_names.index(self.cfg.asset.knee_joints[i])
+        self.left_ankle_pitch_joint_indices = torch.zeros(len(self.cfg.asset.left_ankle_pitch_joints), dtype=torch.long, device=self.device, requires_grad=False)
+        for i in range(len(self.cfg.asset.left_ankle_pitch_joints)):
+            self.left_ankle_pitch_joint_indices[i] = self.dof_names.index(self.cfg.asset.left_ankle_pitch_joints[i])
+        self.right_ankle_pitch_joint_indices = torch.zeros(len(self.cfg.asset.right_ankle_pitch_joints), dtype=torch.long, device=self.device, requires_grad=False)
+        for i in range(len(self.cfg.asset.right_ankle_pitch_joints)):
+            self.right_ankle_pitch_joint_indices[i] = self.dof_names.index(self.cfg.asset.right_ankle_pitch_joints[i])
+        self.ankle_pitch_joint_indices = torch.cat((self.left_ankle_pitch_joint_indices, self.right_ankle_pitch_joint_indices))
 
-        self.ankle_joint_indices = torch.zeros(len(self.cfg.asset.ankle_joints), dtype=torch.long, device=self.device, requires_grad=False)
-        for i in range(len(self.cfg.asset.ankle_joints)):
-            self.ankle_joint_indices[i] = self.dof_names.index(self.cfg.asset.ankle_joints[i])
+        self.left_ankle_roll_joint_indices = torch.zeros(len(self.cfg.asset.left_ankle_roll_joints), dtype=torch.long, device=self.device, requires_grad=False)
+        for i in range(len(self.cfg.asset.left_ankle_roll_joints)):
+            self.left_ankle_roll_joint_indices[i] = self.dof_names.index(self.cfg.asset.left_ankle_roll_joints[i])
+        self.right_ankle_roll_joint_indices = torch.zeros(len(self.cfg.asset.right_ankle_roll_joints), dtype=torch.long, device=self.device, requires_grad=False)
+        for i in range(len(self.cfg.asset.right_ankle_roll_joints)):
+            self.right_ankle_roll_joint_indices[i] = self.dof_names.index(self.cfg.asset.right_ankle_roll_joints[i])
+        self.ankle_roll_joint_indices = torch.cat((self.left_ankle_roll_joint_indices, self.right_ankle_roll_joint_indices))
 
-        self.left_arm_joint_indices = torch.zeros(len(self.cfg.asset.left_arm_joints), dtype=torch.long, device=self.device, requires_grad=False)
-        for i in range(len(self.cfg.asset.left_arm_joints)):
-            self.left_arm_joint_indices[i] = self.dof_names.index(self.cfg.asset.left_arm_joints[i])
-        self.right_arm_joint_indices = torch.zeros(len(self.cfg.asset.right_arm_joints), dtype=torch.long, device=self.device, requires_grad=False)
-        for i in range(len(self.cfg.asset.right_arm_joints)):
-            self.right_arm_joint_indices[i] = self.dof_names.index(self.cfg.asset.right_arm_joints[i])
+        self.left_arm_joint_indices = torch.cat((self.left_shoulder_pitch_joint_indices, self.left_shoulder_roll_joint_indices, self.left_shoulder_yaw_joint_indices, self.left_elbow_joint_indices))
 
-        self.upper_body_joint_indices = torch.cat([self.right_arm_joint_indices, self.left_arm_joint_indices, self.waist_joint_indices])
-        self.lower_body_joint_indices = torch.cat([self.all_hip_joint_indices, self.knee_joint_indices, self.ankle_joint_indices])
+        self.right_arm_joint_indices = torch.cat((self.right_shoulder_pitch_joint_indices, self.right_shoulder_roll_joint_indices, self.right_shoulder_yaw_joint_indices, self.right_elbow_joint_indices))
+
+        self.left_leg_joint_indices = torch.cat((self.left_hip_yaw_joint_indices, self.left_hip_roll_joint_indices, self.left_hip_pitch_joint_indices, self.left_knee_joint_indices, self.left_ankle_pitch_joint_indices, self.left_ankle_roll_joint_indices))
+
+        self.right_leg_joint_indices = torch.cat((self.right_hip_yaw_joint_indices, self.right_hip_roll_joint_indices, self.right_hip_pitch_joint_indices, self.right_knee_joint_indices, self.right_ankle_pitch_joint_indices, self.right_ankle_roll_joint_indices))
+
+        self.all_shoulder_joint_indices = torch.cat((self.shoulder_pitch_joint_indices, self.shoulder_roll_joint_indices, self.shoulder_yaw_joint_indices))
+
+        self.all_hip_joint_indices = torch.cat((self.hip_yaw_joint_indices, self.hip_roll_joint_indices, self.hip_pitch_joint_indices))
+
+        self.all_ankle_joint_indices = torch.cat((self.ankle_pitch_joint_indices, self.ankle_roll_joint_indices))
+
+        self.upper_body_joint_indices = torch.cat((self.left_arm_joint_indices, self.right_arm_joint_indices, self.waist_joint_indices))
+
+        self.lower_body_joint_indices = torch.cat((self.left_leg_joint_indices, self.right_leg_joint_indices))
 
         tracking_body_names = []
         for target_name in self.cfg.asset.tracking_body_names:
@@ -1200,26 +1241,6 @@ class LeggedRobot(BaseTask):
             reward = reward * ~standup + torch.ones_like(reward) * standup
         return reward
 
-    def _reward_thigh_ori(self):
-        # 获取膝盖和大腿的位置
-        left_knee_pos = self.rigid_body_states[:, self.left_knee_indices, :3].clone()
-        right_knee_pos = self.rigid_body_states[:, self.right_knee_indices, :3].clone()
-        left_thigh_pos = self.rigid_body_states[:, self.left_thigh_indices, :3].clone()
-        right_thigh_pos = self.rigid_body_states[:, self.right_thigh_indices, :3].clone()
-        # 计算大腿向量中Z分量的比例（Z分量/向量长度）
-        left_feet_orientation = (left_thigh_pos - left_knee_pos)[:, :, 2] / torch.norm(left_thigh_pos - left_knee_pos, dim=-1)
-        right_feet_orientation = (right_thigh_pos - right_knee_pos)[:, :, 2] / torch.norm(right_thigh_pos - right_knee_pos, dim=-1)
-        # 左右取平均
-        feet_orientation = torch.min(torch.concat([left_feet_orientation, right_feet_orientation], dim=-1), dim=-1)[0]
-        # 仅在1阶段后生效
-        base_height = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase1
-        reward = tolerance(feet_orientation, [0.8, np.inf], 1, 0.1) * base_height
-        # 3阶段后奖励恒为1【post_task控制】
-        if self.cfg.constraints.post_task:
-            standup = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase3
-            reward = reward * ~standup + torch.ones_like(reward) * standup
-        return reward
-
     def _reward_feet_ori_rate(self):
         # 获取膝盖和脚的位置
         left_knee_pos = self.rigid_body_states[:, self.left_knee_indices, :3].clone()
@@ -1373,6 +1394,51 @@ class LeggedRobot(BaseTask):
     def _reward_deviation_knee_joint(self):
         return torch.sum(torch.square(self.dof_pos - self.target_dof_pos)[:, self.knee_joint_indices], dim=-1)
 
+    # ----- style reward
+
+    def _reward_shoulder_roll_deviation(self):
+        left_shoulder_roll_dof = self.dof_pos[:, self.left_shoulder_roll_joint_indices]
+        right_shoulder_roll_dof = self.dof_pos[:, self.right_shoulder_roll_joint_indices]
+        abs_sum_shoulder_roll_dof = torch.abs(left_shoulder_roll_dof + right_shoulder_roll_dof)
+        reward = (abs_sum_shoulder_roll_dof > 2 * self.cfg.rewards.shoulder_roll_deviation_off_center_threshold) | ((left_shoulder_roll_dof < -self.cfg.rewards.shoulder_roll_deviation_inside_threshold) & (right_shoulder_roll_dof > self.cfg.rewards.shoulder_roll_deviation_inside_threshold))
+        return reward.float().squeeze(1)
+
+    def _reward_shoulder_yaw_deviation(self):
+        left_shoulder_yaw_dof = self.dof_pos[:, self.left_shoulder_yaw_joint_indices]
+        right_shoulder_yaw_dof = self.dof_pos[:, self.right_shoulder_yaw_joint_indices]
+        abs_sum_shoulder_yaw_dof = torch.abs(left_shoulder_yaw_dof + right_shoulder_yaw_dof)
+        reward = (abs_sum_shoulder_yaw_dof > 2 * self.cfg.rewards.shoulder_yaw_deviation_off_center_threshold) | ((left_shoulder_yaw_dof < -self.cfg.rewards.shoulder_yaw_deviation_inside_threshold) & (right_shoulder_yaw_dof > self.cfg.rewards.shoulder_yaw_deviation_inside_threshold))
+        return reward.float().squeeze(1)
+
+    # 腰关节活动范围限制【有腰关节专属】
+    def _reward_waist_deviation(self):
+        wrist_dof = self.dof_pos[:, self.waist_joint_indices]
+        reward = torch.abs(wrist_dof) > self.cfg.rewards.waist_deviation_threshold
+        return reward.float().squeeze(1)
+
+    def _reward_hip_yaw_deviation(self):
+        left_hip_yaw_dof = self.dof_pos[:, self.left_hip_yaw_joint_indices]
+        right_hip_yaw_dof = self.dof_pos[:, self.right_hip_yaw_joint_indices]
+        abs_sum_hip_yaw_dof = torch.abs(left_hip_yaw_dof + right_hip_yaw_dof)
+        reward = (abs_sum_hip_yaw_dof > 2 * self.cfg.rewards.hip_yaw_deviation_off_center_threshold) | ((left_hip_yaw_dof < -self.cfg.rewards.hip_yaw_deviation_inside_threshold) & (right_hip_yaw_dof > self.cfg.rewards.hip_yaw_deviation_inside_threshold))
+        return reward.float().squeeze(1)
+
+    def _reward_hip_roll_deviation(self):
+        left_hip_roll_dof = self.dof_pos[:, self.left_hip_roll_joint_indices]
+        right_hip_roll_dof = self.dof_pos[:, self.right_hip_roll_joint_indices]
+        abs_sum_hip_roll_dof = torch.abs(left_hip_roll_dof + right_hip_roll_dof)
+        reward = (abs_sum_hip_roll_dof > 2 * self.cfg.rewards.hip_roll_deviation_off_center_threshold) | ((left_hip_roll_dof > self.cfg.rewards.hip_roll_deviation_inside_threshold) & (right_hip_roll_dof < -self.cfg.rewards.hip_roll_deviation_inside_threshold))
+        return reward.float().squeeze(1)
+
+    def _reward_ankle_roll_deviation(self):
+        left_ankle_roll_dof = self.dof_pos[:, self.left_ankle_roll_joint_indices]
+        right_ankle_roll_dof = self.dof_pos[:, self.right_ankle_roll_joint_indices]
+        abs_sum_ankle_roll_dof = torch.abs(left_ankle_roll_dof - right_ankle_roll_dof)  # 注意脚踝反向
+        reward = (abs_sum_ankle_roll_dof > 2 * self.cfg.rewards.ankle_roll_deviation_off_center_threshold) | ((left_ankle_roll_dof > self.cfg.rewards.ankle_roll_deviation_inside_threshold) & (right_ankle_roll_dof > self.cfg.rewards.ankle_roll_deviation_inside_threshold))
+        return reward.float().squeeze(1)
+
+    # ---------- after phase2
+
     def _reward_left_foot_displacement(self):
         # 左脚限制在基座0.3m半径以内
         base_xy = self.root_states[:, :2].clone()
@@ -1380,7 +1446,7 @@ class LeggedRobot(BaseTask):
         mse_error = torch.sum(torch.square(base_xy - left_foot_xy), dim=-1).clamp(0.3, np.inf)
         # 脚贴地（脚高度小于0.3）才计算
         reward = torch.exp(mse_error * self.cfg.rewards.left_foot_displacement_sigma) * (self.rigid_body_states[:, self.left_foot_indices, 2] < 0.3).squeeze(1)
-        standup = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase3
+        standup = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase2
         return reward * standup
 
     def _reward_right_foot_displacement(self):
@@ -1390,42 +1456,27 @@ class LeggedRobot(BaseTask):
         mse_error = torch.sum(torch.square(base_xy - right_foot_xy), dim=-1).clamp(0.3, np.inf)
         # 脚贴地（脚高度小于0.3）才计算
         reward = torch.exp(mse_error * self.cfg.rewards.right_foot_displacement_sigma) * (self.rigid_body_states[:, self.right_foot_indices, 2] < 0.3).squeeze(1)
-        standup = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase3
+        standup = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase2
         return reward * standup
 
-    # # 腰关节活动范围限制【有腰关节专属】
-    # def _reward_waist_deviation(self):
-    #     wrist_dof = self.dof_pos[:, self.waist_joint_indices]
-    #     reward = (torch.abs(wrist_dof) > 1.4).float()
-    #     return reward.squeeze(1)
-
-    def _reward_hip_yaw_deviation(self):
-        hip_yaw_dof = self.dof_pos[:, self.hip_yaw_joint_indices]
-        hip_yaw_abs = torch.abs(hip_yaw_dof)
-        reward = (torch.max(hip_yaw_abs, dim=-1)[0] > 0.33) | (torch.min(hip_yaw_abs, dim=-1)[0] > 0.3)
-        return reward
-
-    def _reward_hip_roll_deviation(self):
-        hip_roll_dof = self.dof_pos[:, self.hip_roll_joint_indices]
-        hip_roll_abs = torch.abs(hip_roll_dof)
-        reward = (torch.max(hip_roll_abs, dim=-1)[0] > 0.5) | (torch.min(hip_roll_abs, dim=-1)[0] > 0.45)
-        return reward
-
-    def _reward_hip_pitch_deviation(self):
-        hip_pitch_dof = self.dof_pos[:, self.hip_pitch_joint_indices]
-        hip_pitch_abs = torch.abs(hip_pitch_dof)
-        reward = (torch.max(hip_pitch_abs, dim=-1)[0] > 1.6) | (torch.min(hip_pitch_dof, dim=-1)[0] < -0.38)
-        return reward
-
-    def _reward_knee_deviation(self):
-        knee_dof = self.dof_pos[:, self.knee_joint_indices]
-        knee_abs = torch.abs(knee_dof)
-        reward = (torch.max(knee_abs, dim=-1)[0] > 2.85) | (torch.min(knee_dof, dim=-1)[0] < -0.06)
-        return reward
-
-    def _reward_shoulder_roll_deviation(self):
-        shoulder_roll_dof = self.dof_pos[:, self.shoulder_roll_joint_indices]
-        reward = (shoulder_roll_dof[:, 0] < -0.02) | (shoulder_roll_dof[:, 1] > 0.02)
+    def _reward_thigh_ori(self):
+        # 获取大腿和膝盖的位置
+        left_thigh_pos = self.rigid_body_states[:, self.left_thigh_indices, :3].clone()
+        right_thigh_pos = self.rigid_body_states[:, self.right_thigh_indices, :3].clone()
+        left_knee_pos = self.rigid_body_states[:, self.left_knee_indices, :3].clone()
+        right_knee_pos = self.rigid_body_states[:, self.right_knee_indices, :3].clone()
+        # 计算大腿向量中Z分量的比例（Z分量/向量长度）
+        left_feet_orientation = (left_thigh_pos - left_knee_pos)[:, :, 2] / torch.norm(left_thigh_pos - left_knee_pos, dim=-1)
+        right_feet_orientation = (right_thigh_pos - right_knee_pos)[:, :, 2] / torch.norm(right_thigh_pos - right_knee_pos, dim=-1)
+        # 左右取平均
+        feet_orientation = torch.min(torch.concat([left_feet_orientation, right_feet_orientation], dim=-1), dim=-1)[0]
+        # 仅在2阶段后生效
+        base_height = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase2
+        reward = tolerance(feet_orientation, [0.8, np.inf], 1, 0.1) * base_height
+        # 3阶段后奖励恒为1【post_task控制】
+        if self.cfg.constraints.post_task:
+            standup = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase3
+            reward = reward * ~standup + torch.ones_like(reward) * standup
         return reward
 
     def _reward_lower_body_deviation(self):
@@ -1504,11 +1555,3 @@ class LeggedRobot(BaseTask):
         feet_distances = torch.norm(left_feet_pos - right_feet_pos, dim=-1)
         standup = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase3
         return (torch.var(feet_distances, dim=-1) < 1) * standup
-
-    # # 腰关节和目标差【有腰关节专属】
-    # def _reward_target_waist_dof_pos(self):
-    #     mse = torch.sum(torch.square(self.dof_pos[:, self.waist_joint_indices] - self.target_dof_pos[:, self.waist_joint_indices]), dim=-1)
-    #     standup =self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase3
-    #     reward = torch.exp(mse * self.cfg.rewards.target_dof_pos_sigma)
-    #     reward = reward * standup
-    #     return reward

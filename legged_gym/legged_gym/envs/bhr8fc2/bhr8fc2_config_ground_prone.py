@@ -168,47 +168,6 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         right_ankle_pitch_joints = ['right_ankle_pitch_joint']
         left_ankle_roll_joints = ['left_ankle_roll_joint']
         right_ankle_roll_joints = ['right_ankle_roll_joint']
-        shoulder_joints = ['left_shoulder_pitch_joint',
-                           'left_shoulder_roll_joint',
-                           'left_shoulder_yaw_joint',
-                           'right_shoulder_pitch_joint',
-                           'right_shoulder_roll_joint',
-                           'right_shoulder_yaw_joint']
-        elbow_joints = ['left_elbow_joint',
-                        'right_elbow_joint']
-        hip_joints = ['left_hip_yaw_joint',
-                      'left_hip_roll_joint',
-                      'left_hip_pitch_joint',
-                      'right_hip_yaw_joint',
-                      'right_hip_roll_joint',
-                      'right_hip_pitch_joint']
-        knee_joints = ['left_knee_joint',
-                       'right_knee_joint']
-        ankle_joints = ['left_ankle_pitch_joint',
-                        'left_ankle_roll_joint',
-                        'right_ankle_pitch_joint',
-                        'right_ankle_roll_joint']
-
-        left_arm_joints = ['left_shoulder_pitch_joint',
-                           'left_shoulder_roll_joint',
-                           'left_shoulder_yaw_joint',
-                           'left_elbow_joint']
-        right_arm_joints = ['right_shoulder_pitch_joint',
-                            'right_shoulder_roll_joint',
-                            'right_shoulder_yaw_joint',
-                            'right_elbow_joint']
-        left_leg_joints = ['left_hip_yaw_joint',
-                           'left_hip_roll_joint',
-                           'left_hip_pitch_joint',
-                           'left_knee_joint',
-                           'left_ankle_pitch_joint',
-                           'left_ankle_roll_joint']
-        right_leg_joints = ['right_hip_yaw_joint',
-                            'right_hip_roll_joint',
-                            'right_hip_pitch_joint',
-                            'right_knee_joint',
-                            'right_ankle_pitch_joint',
-                            'right_ankle_roll_joint']
 
         trunk_names = ['torso']
         tracking_body_names = []
@@ -275,6 +234,18 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         orientation_height_threshold = 0.9
         target_base_height = 0.55
 
+        shoulder_roll_deviation_off_center_threshold = 0.7
+        shoulder_roll_deviation_inside_threshold = 0.1
+        shoulder_yaw_deviation_off_center_threshold = 1.0
+        shoulder_yaw_deviation_inside_threshold = 0.5
+        waist_deviation_threshold = 1.4
+        hip_yaw_deviation_off_center_threshold = 0.3
+        hip_yaw_deviation_inside_threshold = 0.2
+        hip_roll_deviation_off_center_threshold = 0.45
+        hip_roll_deviation_inside_threshold = 0.3
+        ankle_roll_deviation_off_center_threshold = 0.3
+        ankle_roll_deviation_inside_threshold = 0.2
+
         left_foot_displacement_sigma = -2
         right_foot_displacement_sigma = -2
         hip_yaw_var_sigma = -2
@@ -293,15 +264,16 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             regu_dof_pos_limits = -100.0
             regu_dof_vel_limits = -1
 
-            # style reward
+            # ----- style reward
+            style_shoulder_roll_deviation = -10
+            style_shoulder_yaw_deviation = -10
             style_waist_deviation = 0  # BHR8FC2没有腰部关节，禁用
             style_hip_yaw_deviation = -10
             style_hip_roll_deviation = -10
-            style_hip_pitch_deviation = -10
-            style_shoulder_roll_deviation = -2.5
+            style_ankle_roll_deviation = -10
+            # ---------- after phase2
             style_left_foot_displacement = 2.5
             style_right_foot_displacement = 2.5
-            style_knee_deviation = -0.25
             style_thigh_ori = 10
             style_feet_distance = -10
             style_style_ang_vel_xy = 25
