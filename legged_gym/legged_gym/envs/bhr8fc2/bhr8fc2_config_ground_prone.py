@@ -364,6 +364,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         base_vel_limit = 20
         soft_dof_pos_limit = 0.9  # 软关节位置限制（安全范围比例）
         soft_dof_vel_limit = 0.9  # 软关节速度限制（安全范围比例）
+        soft_torque_limit = 0.9   # 软关节力矩限制（安全范围比例）
 
     class sim:
         dt = 0.005
