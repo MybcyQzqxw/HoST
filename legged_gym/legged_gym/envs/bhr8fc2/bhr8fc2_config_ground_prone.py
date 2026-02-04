@@ -352,7 +352,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
     class curriculum:
         # 施加向上拉力
         pull_force = True
-        force = 200
+        force = 350
         no_orientation = True  # 所有姿态都施加力
 
         # 增加难度的头部高度阈值
