@@ -171,7 +171,7 @@ class LeggedRobot(BaseTask):
         if len(env_ids) == 0:
             return
         self.extras['episode'] = {}
-        self.extras['episode']['base_height'] = self.old_headheight[env_ids].mean()
+        self.extras['episode']['base_height'] = self.old_baseheight[env_ids].mean()
 
         # reset robot states
         self._reset_dofs(env_ids)
@@ -190,8 +190,8 @@ class LeggedRobot(BaseTask):
         self.episode_length_buf[env_ids] = 0
         self.real_episode_length_buf[env_ids] = 0
         self.reset_buf[env_ids] = 1
-        self.old_headheight[env_ids] = 0.
-        self.max_headheight[env_ids] = 0.
+        self.old_baseheight[env_ids] = 0.
+        self.max_baseheight[env_ids] = 0.
         self.feet_ori[env_ids] = 0.
         # fill extras
         self.delay_buffer[:, env_ids, :] = 0.
@@ -595,8 +595,8 @@ class LeggedRobot(BaseTask):
         # rewards 相关
         self.feet_air_time = torch.zeros(self.num_envs, self.feet_indices.shape[0], dtype=torch.float, device=self.device, requires_grad=False)
         self.last_contacts = torch.zeros(self.num_envs, len(self.feet_indices), dtype=torch.bool, device=self.device, requires_grad=False)
-        self.old_headheight = torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False).unsqueeze(1)
-        self.max_headheight = torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False).unsqueeze(1)
+        self.old_baseheight = torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False).unsqueeze(1)
+        self.max_baseheight = torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False).unsqueeze(1)
         self.feet_ori = torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False).unsqueeze(1)
 
         # 向上拉力
