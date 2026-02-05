@@ -1270,6 +1270,24 @@ class LeggedRobot(BaseTask):
         reward = (abs_sum_ankle_roll_dof > 2 * self.cfg.constraints.ankle_roll_deviation_off_center_threshold) | ((left_ankle_roll_dof > self.cfg.constraints.ankle_roll_deviation_inside_threshold) & (right_ankle_roll_dof > self.cfg.constraints.ankle_roll_deviation_inside_threshold))
         return reward.float().squeeze(1)
 
+    def _reward_no_torso_above_head(self):
+        base_height = self.root_states[:, 2]  # [num_envs]
+        head_height = self.rigid_body_states[:, self.head_indices, 2].squeeze(-1)  # [num_envs]
+        reward = (base_height > head_height).float()
+        return reward
+
+    def _reward_no_torso_below_leg(self):
+        base_height = self.root_states[:, 2]  # [num_envs]
+        left_knee_height = self.rigid_body_states[:, self.left_knee_indices, 2].squeeze(-1)  # [num_envs]
+        right_knee_height = self.rigid_body_states[:, self.right_knee_indices, 2].squeeze(-1)  # [num_envs]
+        left_ankle_pitch_height = self.rigid_body_states[:, self.left_ankle_pitch_indices, 2].squeeze(-1)  # [num_envs]
+        right_ankle_pitch_height = self.rigid_body_states[:, self.right_ankle_pitch_indices, 2].squeeze(-1)  # [num_envs]
+        left_foot_height = self.rigid_body_states[:, self.left_foot_indices, 2].squeeze(-1)  # [num_envs]
+        right_foot_height = self.rigid_body_states[:, self.right_foot_indices, 2].squeeze(-1)  # [num_envs]
+        # 躯干低于任一膝部或任一踝部时惩罚
+        reward = (base_height < left_knee_height) | (base_height < right_knee_height) | (base_height < left_ankle_pitch_height) | (base_height < right_ankle_pitch_height) | (base_height < left_foot_height) | (base_height < right_foot_height)
+        return reward.float()
+
     def _reward_no_head_contact(self):
         head_contact = torch.norm(self.contact_forces[:, self.head_indices, :], dim=-1) > 1.0  # [num_envs, n]
         any_head_contact = torch.any(head_contact, dim=1)  # [num_envs]
