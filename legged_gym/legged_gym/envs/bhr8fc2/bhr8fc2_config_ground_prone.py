@@ -224,13 +224,14 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         # ---------- before1
         before1_thigh_ori_threshold = 0.8
         before1_shank_ori_threshold = 0.9
+        # ---------- after1
+        after1_shank_ori_threshold = 0.7
         # ---------- before2
-        before2_base_ang_vel_xz_sigma = -2
+        before2_base_ang_vel_x_sigma = -2
         before2_base_lin_vel_y_sigma = -5
         # ---------- after1_before2
-        after1_before2_shank_ori_threshold = 0.7
         # ---------- after2
-        after2_base_ang_vel_xyz_sigma = -2
+        after2_base_ang_vel_xy_sigma = -2
         after2_base_lin_vel_xy_sigma = -5
         after2_upper_body_deviation_sigma = -2
         after2_lower_body_deviation_sigma = -2
@@ -253,9 +254,9 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             regu_smoothness = -0.003
             regu_torques = -2.5e-6
             regu_joint_power = -2.5e-5
-            regu_dof_pos_limits = -30.0
+            regu_dof_pos_limits = -20.0
             regu_dof_vel_limits = -0.5
-            regu_torque_limits = -0.05
+            regu_torque_limits = -0.03
 
             # style reward
             style_shoulder_roll_deviation = -5
@@ -264,15 +265,13 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             style_hip_yaw_deviation = -5
             style_hip_roll_deviation = -5
             style_ankle_roll_deviation = -5
-            style_no_torso_above_head = -20
-            style_no_torso_below_leg = -20
-            style_no_head_contact = -20
-            style_no_shoulder_contact = -10
-            style_no_torso_contact = -20
-            style_no_hip_contact = -10
-            style_forearm_knee_contact_mismatch = -10
-            style_tripod_contact = -20
-            style_lower_body_contact = -20
+            style_no_head_contact = -15
+            style_no_shoulder_contact = -5
+            style_no_torso_contact = -15
+            style_no_hip_contact = -5
+            style_forearm_knee_contact_mismatch = -5
+            style_tripod_contact = -15
+            style_lower_body_contact = -15
             # ----- phase related
             # ---------- before1
             style_before1_forearm_contact = 10
@@ -280,14 +279,17 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             style_before1_foot_contact = 10
             style_before1_thigh_ori = 10
             style_before1_shank_ori = 10
-            # ---------- before2
-            style_before2_base_ang_vel_xz = 10
-            style_before2_base_lin_vel_y = 10
+            # ---------- after1
+            style_after1_no_torso_above_head = -15
+            style_after1_no_torso_below_leg = -15
+            style_after1_shank_ori = 10
             # ---------- after1_before2
             style_after1_before2_base_ang_vel_y = 10
-            style_after1_before2_shank_ori = 10
+            # ---------- before2
+            style_before2_base_ang_vel_x = 10
+            style_before2_base_lin_vel_y = 10
             # ---------- after2
-            style_after2_base_ang_vel_xyz = 10
+            style_after2_base_ang_vel_xy = 10
             style_after2_base_lin_vel_xy = 10
             style_after2_upper_body_deviation = 10
             style_after2_lower_body_deviation = 10
@@ -297,9 +299,9 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             style_after2_feet_height_var = 10
             style_after2_left_foot_displacement = 2.5
             style_after2_right_foot_displacement = 2.5
-            style_after2_no_forearm_contact = -20
-            style_after2_no_knee_contact = -20
-            style_after2_foot_contact = -20
+            style_after2_no_forearm_contact = -15
+            style_after2_no_knee_contact = -10
+            style_after2_foot_contact = -15
 
             # target reward
             target_target_base_height = 10

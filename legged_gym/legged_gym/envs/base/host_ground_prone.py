@@ -1270,24 +1270,6 @@ class LeggedRobot(BaseTask):
         reward = (abs_sum_ankle_roll_dof > 2 * self.cfg.constraints.ankle_roll_deviation_off_center_threshold) | ((left_ankle_roll_dof > self.cfg.constraints.ankle_roll_deviation_inside_threshold) & (right_ankle_roll_dof > self.cfg.constraints.ankle_roll_deviation_inside_threshold))
         return reward.float().squeeze(1)
 
-    def _reward_no_torso_above_head(self):
-        base_height = self.root_states[:, 2]  # [num_envs]
-        head_height = self.rigid_body_states[:, self.head_indices, 2].squeeze(-1)  # [num_envs]
-        reward = (base_height > head_height).float()
-        return reward
-
-    def _reward_no_torso_below_leg(self):
-        base_height = self.root_states[:, 2]  # [num_envs]
-        left_knee_height = self.rigid_body_states[:, self.left_knee_indices, 2].squeeze(-1)  # [num_envs]
-        right_knee_height = self.rigid_body_states[:, self.right_knee_indices, 2].squeeze(-1)  # [num_envs]
-        left_ankle_pitch_height = self.rigid_body_states[:, self.left_ankle_pitch_indices, 2].squeeze(-1)  # [num_envs]
-        right_ankle_pitch_height = self.rigid_body_states[:, self.right_ankle_pitch_indices, 2].squeeze(-1)  # [num_envs]
-        left_foot_height = self.rigid_body_states[:, self.left_foot_indices, 2].squeeze(-1)  # [num_envs]
-        right_foot_height = self.rigid_body_states[:, self.right_foot_indices, 2].squeeze(-1)  # [num_envs]
-        # 躯干低于任一膝部或任一踝部时惩罚
-        reward = (base_height < left_knee_height) | (base_height < right_knee_height) | (base_height < left_ankle_pitch_height) | (base_height < right_ankle_pitch_height) | (base_height < left_foot_height) | (base_height < right_foot_height)
-        return reward.float()
-
     def _reward_no_head_contact(self):
         head_contact = torch.norm(self.contact_forces[:, self.head_indices, :], dim=-1) > 1.0  # [num_envs, n]
         any_head_contact = torch.any(head_contact, dim=1)  # [num_envs]
@@ -1450,30 +1432,29 @@ class LeggedRobot(BaseTask):
         reward = tolerance(shank_orientation, [self.cfg.constraints.before1_shank_ori_threshold, np.inf], 1, 0.1) * before_phase1  # [num_envs]
         return reward
 
-    # ---------- before2
+    # ---------- after1
 
-    def _reward_before2_base_ang_vel_xz(self):
-        # 仅在 phase2 之前生效，限制 roll 和 yaw，保留 pitch
-        before_phase2 = self.root_states[:, 2] < self.cfg.rewards.target_base_height_phase2
-        # 提取 roll ([:, 0]) 和 yaw ([:, 2])
-        ang_vel_xz = torch.cat([self.base_ang_vel[:, 0:1], self.base_ang_vel[:, 2:3]], dim=1)
-        return torch.exp(torch.sum(torch.square(ang_vel_xz), dim=1) * self.cfg.constraints.before2_base_ang_vel_xz_sigma) * before_phase2
+    def _reward_after1_no_torso_above_head(self):
+        base_height = self.root_states[:, 2]  # [num_envs]
+        head_height = self.rigid_body_states[:, self.head_indices, 2].squeeze(-1)  # [num_envs]
+        reward = (base_height > head_height).float()
+        after_phase1 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase1
+        return reward * after_phase1
 
-    def _reward_before2_base_lin_vel_y(self):
-        # 仅在 phase2 之前生效，限制 y 方向线速度（无侧向移动）
-        before_phase2 = self.root_states[:, 2] < self.cfg.rewards.target_base_height_phase2
-        return torch.exp(torch.square(self.base_lin_vel[:, 1]) * self.cfg.constraints.before2_base_lin_vel_y_sigma) * before_phase2
+    def _reward_after1_no_torso_below_leg(self):
+        base_height = self.root_states[:, 2]  # [num_envs]
+        left_knee_height = self.rigid_body_states[:, self.left_knee_indices, 2].squeeze(-1)  # [num_envs]
+        right_knee_height = self.rigid_body_states[:, self.right_knee_indices, 2].squeeze(-1)  # [num_envs]
+        left_ankle_pitch_height = self.rigid_body_states[:, self.left_ankle_pitch_indices, 2].squeeze(-1)  # [num_envs]
+        right_ankle_pitch_height = self.rigid_body_states[:, self.right_ankle_pitch_indices, 2].squeeze(-1)  # [num_envs]
+        left_foot_height = self.rigid_body_states[:, self.left_foot_indices, 2].squeeze(-1)  # [num_envs]
+        right_foot_height = self.rigid_body_states[:, self.right_foot_indices, 2].squeeze(-1)  # [num_envs]
+        # 躯干低于任一膝部或任一踝部时惩罚
+        reward = (base_height < left_knee_height) | (base_height < right_knee_height) | (base_height < left_ankle_pitch_height) | (base_height < right_ankle_pitch_height) | (base_height < left_foot_height) | (base_height < right_foot_height).float()
+        after_phase1 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase1
+        return reward * after_phase1
 
-    # ---------- after1_before2
-
-    def _reward_after1_before2_base_ang_vel_y(self):
-        current_height = self.root_states[:, 2]
-        in_transition = (current_height > self.cfg.rewards.target_base_height_phase1) & (current_height < self.cfg.rewards.target_base_height_phase2)
-        pitch_ang_vel = self.base_ang_vel[:, 1]
-        reward = torch.clamp(-pitch_ang_vel, -1.0, 1.0)
-        return reward * in_transition
-
-    def _reward_after1_before2_shank_ori(self):
+    def _reward_after1_shank_ori(self):
         # 获取膝盖和脚的位置
         left_knee_pos = self.rigid_body_states[:, self.left_knee_indices, :3].clone()  # [num_envs, 1, 3]
         right_knee_pos = self.rigid_body_states[:, self.right_knee_indices, :3].clone()  # [num_envs, 1, 3]
@@ -1487,21 +1468,38 @@ class LeggedRobot(BaseTask):
         # 左右取平均
         shank_orientation = torch.mean(torch.concat([left_shank_orientation, right_shank_orientation], dim=-1), dim=-1)  # [num_envs]
         # 阶段条件
-        current_height = self.root_states[:, 2]  # [num_envs]
-        in_transition = (current_height > self.cfg.rewards.target_base_height_phase1) & (current_height < self.cfg.rewards.target_base_height_phase2)  # [num_envs]
-        reward = tolerance(shank_orientation, [self.cfg.constraints.after1_before2_shank_ori_threshold, np.inf], 1, 0.1) * in_transition  # [num_envs]
-        # 3阶段后奖励恒为1【post_task控制】
-        if self.cfg.constraints.post_task:
-            standup = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase3
-            reward = reward * ~standup + torch.ones_like(reward) * standup
+        after_phase1 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase1
+        reward = tolerance(shank_orientation, [self.cfg.constraints.after1_shank_ori_threshold, np.inf], 1, 0.1) * after_phase1  # [num_envs]
         return reward
+
+    # ---------- after1_before2
+
+    def _reward_after1_before2_base_ang_vel_y(self):
+        current_height = self.root_states[:, 2]
+        in_transition = (current_height > self.cfg.rewards.target_base_height_phase1) & (current_height < self.cfg.rewards.target_base_height_phase2)
+        pitch_ang_vel = self.base_ang_vel[:, 1]
+        reward = torch.clamp(-pitch_ang_vel, -1.0, 1.0)
+        return reward * in_transition
+
+    # ---------- before2
+
+    def _reward_before2_base_ang_vel_x(self):
+        # 仅在 phase2 之前生效，限制 x 轴角速度 (roll)
+        before_phase2 = self.root_states[:, 2] < self.cfg.rewards.target_base_height_phase2
+        ang_vel_x = self.base_ang_vel[:, 0]  # x 轴角速度
+        return torch.exp(torch.square(ang_vel_x) * self.cfg.constraints.before2_base_ang_vel_x_sigma) * before_phase2
+
+    def _reward_before2_base_lin_vel_y(self):
+        # 仅在 phase2 之前生效，限制 y 方向线速度（无侧向移动）
+        before_phase2 = self.root_states[:, 2] < self.cfg.rewards.target_base_height_phase2
+        return torch.exp(torch.square(self.base_lin_vel[:, 1]) * self.cfg.constraints.before2_base_lin_vel_y_sigma) * before_phase2
 
     # ---------- after2
 
-    def _reward_after2_base_ang_vel_xyz(self):
-        # 仅在 phase2 之后生效，限制所有角速度 (roll, pitch, yaw)
+    def _reward_after2_base_ang_vel_xy(self):
+        # 仅在 phase2 之后生效，限制 x 和 y 方向角速度 (roll, pitch)
         after_phase2 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase2
-        return torch.exp(torch.sum(torch.square(self.base_ang_vel), dim=1) * self.cfg.constraints.after2_base_ang_vel_xyz_sigma) * after_phase2
+        return torch.exp(torch.sum(torch.square(self.base_ang_vel[:, :2]), dim=1) * self.cfg.constraints.after2_base_ang_vel_xy_sigma) * after_phase2
 
     def _reward_after2_base_lin_vel_xy(self):
         # 仅在 phase2 之后生效，限制 x 和 y 方向线速度（仅垂直升高）
