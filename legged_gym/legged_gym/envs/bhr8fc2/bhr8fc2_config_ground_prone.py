@@ -188,7 +188,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         only_positive_rewards = False  # 是否只计算正奖励
         reward_groups = ['task', 'regu', 'style', 'target']
         num_reward_groups = len(reward_groups)
-        reward_group_weights = [2.5, 0.1, 1, 1]
+        reward_group_weights = [10.0, 0.05, 1, 1]  # 【调整】大幅增加task权重，降低regu权重
 
         target_base_height = 0.85  # 【调整】目标质心高度
         target_base_height_phase1 = 0.35
@@ -199,7 +199,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         orientation_threshold = 0.99
 
         class scales:
-            task_base_height = 1
+            task_base_height = 2.0  # 【调整】增大base_height奖励
             task_orientation = 1
 
     class constraints(LeggedRobotCfg.rewards):
@@ -263,26 +263,26 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         class scales:
             # regularization reward
             regu_dof_acc = -2.5e-7
-            regu_dof_vel = -1e-3
-            regu_action_rate = -0.01
-            regu_smoothness = -0.01
+            regu_dof_vel = -5e-4  # 【调整】降低速度惩罚
+            regu_action_rate = -0.005  # 【调整】降低动作变化惩罚
+            regu_smoothness = -0.001  # 【调整】大幅降低平滑性惩罚
             regu_torques = -2.5e-6
             regu_joint_power = -2.5e-5
-            regu_dof_pos_limits = -100.0
-            regu_dof_vel_limits = -1.0
-            regu_torque_limits = -0.03
+            regu_dof_pos_limits = -10.0  # 【调整】大幅降低关节限位惩罚
+            regu_dof_vel_limits = -0.5  # 【调整】降低速度限位惩罚
+            regu_torque_limits = -0.01  # 【调整】降低力矩限位惩罚
 
             # style reward
-            style_shoulder_roll_deviation = -5
-            style_shoulder_yaw_deviation = -5
+            style_shoulder_roll_deviation = -2.5  # 【调整】降低姿态偏差惩罚
+            style_shoulder_yaw_deviation = -2.5
             style_waist_deviation = 0  # BHR8FC2没有腰部关节，禁用
-            style_hip_yaw_deviation = -5
-            style_hip_roll_deviation = -5
-            style_ankle_roll_deviation = -5
-            style_no_head_contact = -15
+            style_hip_yaw_deviation = -2.5
+            style_hip_roll_deviation = -2.5
+            style_ankle_roll_deviation = -2.5
+            style_no_head_contact = -10  # 【调整】降低接触惩罚
             style_no_shoulder_contact = -2.5
             style_no_torso_contact = -2.5
-            style_no_hip_contact = -2.5
+            style_no_hip_contact = -5.0  # 【调整】降低臀部接触惩罚
             style_forearm_knee_contact_mismatch = -5
             style_tripod_contact = -5
             style_lower_body_contact = -5
