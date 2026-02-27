@@ -1451,7 +1451,7 @@ class LeggedRobot(BaseTask):
         left_foot_height = self.rigid_body_states[:, self.left_foot_indices, 2].squeeze(-1)  # [num_envs]
         right_foot_height = self.rigid_body_states[:, self.right_foot_indices, 2].squeeze(-1)  # [num_envs]
         # 躯干低于任一膝部或任一踝部时惩罚
-        reward = (base_height < left_knee_height) | (base_height < right_knee_height) | (base_height < left_ankle_pitch_height) | (base_height < right_ankle_pitch_height) | (base_height < left_foot_height) | (base_height < right_foot_height).float()
+        reward = ((base_height < left_knee_height) | (base_height < right_knee_height) | (base_height < left_ankle_pitch_height) | (base_height < right_ankle_pitch_height) | (base_height < left_foot_height) | (base_height < right_foot_height)).float()
         after_phase1 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase1
         return reward * after_phase1
 
