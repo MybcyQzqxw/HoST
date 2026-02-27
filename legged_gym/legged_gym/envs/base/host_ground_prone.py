@@ -485,7 +485,7 @@ class LeggedRobot(BaseTask):
         self.gym.set_actor_root_state_tensor(self.sim, gymtorch.unwrap_tensor(self.root_states))
 
     def update_curriculum(self, env_ids):
-        if torch.mean(self.old_baseheight[env_ids]) > self.cfg.curriculum.threshold_head_height:
+        if torch.mean(self.old_baseheight[env_ids]) > self.cfg.curriculum.threshold_base_height:
             self.force[env_ids] = (self.force[env_ids] - 20).clamp(0, np.inf)
             self.action_rescale[env_ids] = (self.action_rescale[env_ids] - 0.02).clamp(0.25, np.inf)
 
@@ -1193,7 +1193,7 @@ class LeggedRobot(BaseTask):
 
     def _reward_orientation(self):
         after_phase1 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase1
-        reward = tolerance(-self.projected_gravity[:, 2], [self.cfg.rewards.orientation_threshold, np.inf], self.cfg.rewards.orientation_threshold, 0.1) * after_phase1
+        reward = tolerance(-self.projected_gravity[:, 2], [self.cfg.rewards.orientation_threshold, np.inf], self.cfg.rewards.orientation_threshold, 0.05) * after_phase1
         return reward
 
     # regularization reward
@@ -1573,7 +1573,7 @@ class LeggedRobot(BaseTask):
         left_foot_pos = self.rigid_body_states[:, self.left_foot_indices, :3].clone()
         right_foot_pos = self.rigid_body_states[:, self.right_foot_indices, :3].clone()
         feet_distance = torch.norm(left_foot_pos - right_foot_pos, dim=-1)
-        reward = tolerance(feet_distance, [0, self.cfg.constraints.after2_feet_distance_threshold], self.cfg.constraints.after2_feet_distance_threshold, 0.1).squeeze(1)
+        reward = tolerance(feet_distance, [0, self.cfg.constraints.after2_feet_distance_threshold], self.cfg.constraints.after2_feet_distance_threshold, 0.05).squeeze(1)
         # 仅在 phase2 之后生效
         after_phase2 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase2
         reward = reward * after_phase2

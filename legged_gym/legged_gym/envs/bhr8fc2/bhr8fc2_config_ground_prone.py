@@ -196,7 +196,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         target_base_height_phase3 = 0.85
 
         # task reward
-        orientation_threshold = 0.95
+        orientation_threshold = 0.99
 
         class scales:
             task_base_height = 1
@@ -370,11 +370,11 @@ class BHR8FC2Cfg(LeggedRobotCfg):
     class curriculum:
         # 施加向上拉力
         pull_force = True
-        force = 350
+        force = 300
         no_orientation = True  # 所有姿态都施加力
 
-        # 增加难度的头部高度阈值
-        threshold_head_height = 0.9
+        # 增加难度的基座高度阈值
+        threshold_base_height = 0.6
 
     class limitation:
         # 关节和基座速度限制
