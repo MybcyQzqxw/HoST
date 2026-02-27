@@ -1176,13 +1176,14 @@ class LeggedRobot(BaseTask):
     # task reward
 
     def _reward_base_height(self):
-        # 计算躯干相对于脚部的高度
-        base_z = self.rigid_body_states[:, self.base_indices, 2]  # [num_envs, n]
-        feet_z = self.rigid_body_states[:, self.feet_indices, 2].mean(dim=1, keepdim=True)  # [num_envs, 1]
-        base_height = base_z - feet_z  # [num_envs, n]
+        # # 计算躯干相对于脚部的高度
+        # base_z = self.rigid_body_states[:, self.base_indices, 2]  # [num_envs, n]
+        # feet_z = self.rigid_body_states[:, self.feet_indices, 2].mean(dim=1, keepdim=True)  # [num_envs, 1]
+        # base_height = base_z - feet_z  # [num_envs, n]
+        base_height = self.rigid_body_states[:, self.base_indices, 2]  # [num_envs, n]
         if self.is_gaussian:
             # 高斯奖励：躯干高度达到目标时给满分，低于目标时平滑衰减
-            reward = tolerance(base_height, (self.cfg.rewards.target_base_height, np.inf), self.cfg.rewards.target_base_margin, 0.1)
+            reward = tolerance(base_height, (self.cfg.rewards.target_base_height, np.inf), self.cfg.rewards.target_base_height, 0.1)
             # 更新历史记录（用于监控和调试）
             self.max_baseheight = torch.max(base_height, self.max_baseheight)
             self.old_baseheight = base_height
@@ -1192,7 +1193,7 @@ class LeggedRobot(BaseTask):
 
     def _reward_orientation(self):
         after_phase1 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase1
-        reward = tolerance(-self.projected_gravity[:, 2], [self.cfg.rewards.orientation_threshold, np.inf], self.cfg.rewards.orientation_threshold, 0.05) * after_phase1
+        reward = tolerance(-self.projected_gravity[:, 2], [self.cfg.rewards.orientation_threshold, np.inf], self.cfg.rewards.orientation_threshold, 0.1) * after_phase1
         return reward
 
     # regularization reward
@@ -1233,14 +1234,14 @@ class LeggedRobot(BaseTask):
         left_shoulder_roll_dof = self.dof_pos[:, self.left_shoulder_roll_joint_indices]
         right_shoulder_roll_dof = self.dof_pos[:, self.right_shoulder_roll_joint_indices]
         abs_sum_shoulder_roll_dof = torch.abs(left_shoulder_roll_dof + right_shoulder_roll_dof)
-        reward = (abs_sum_shoulder_roll_dof > 2 * self.cfg.constraints.shoulder_roll_deviation_off_center_threshold) | ((left_shoulder_roll_dof < -self.cfg.constraints.shoulder_roll_deviation_inside_threshold) & (right_shoulder_roll_dof > self.cfg.constraints.shoulder_roll_deviation_inside_threshold))
+        reward = (abs_sum_shoulder_roll_dof > self.cfg.constraints.shoulder_roll_deviation_off_center_threshold) | ((left_shoulder_roll_dof < -self.cfg.constraints.shoulder_roll_deviation_inside_threshold) & (right_shoulder_roll_dof > self.cfg.constraints.shoulder_roll_deviation_inside_threshold))
         return reward.float().squeeze(1)
 
     def _reward_shoulder_yaw_deviation(self):
         left_shoulder_yaw_dof = self.dof_pos[:, self.left_shoulder_yaw_joint_indices]
         right_shoulder_yaw_dof = self.dof_pos[:, self.right_shoulder_yaw_joint_indices]
         abs_sum_shoulder_yaw_dof = torch.abs(left_shoulder_yaw_dof + right_shoulder_yaw_dof)
-        reward = (abs_sum_shoulder_yaw_dof > 2 * self.cfg.constraints.shoulder_yaw_deviation_off_center_threshold) | ((left_shoulder_yaw_dof < -self.cfg.constraints.shoulder_yaw_deviation_inside_threshold) & (right_shoulder_yaw_dof > self.cfg.constraints.shoulder_yaw_deviation_inside_threshold))
+        reward = (abs_sum_shoulder_yaw_dof > self.cfg.constraints.shoulder_yaw_deviation_off_center_threshold) | ((left_shoulder_yaw_dof < -self.cfg.constraints.shoulder_yaw_deviation_inside_threshold) & (right_shoulder_yaw_dof > self.cfg.constraints.shoulder_yaw_deviation_inside_threshold))
         return reward.float().squeeze(1)
 
     # 腰关节活动范围限制【有腰关节专属】
@@ -1253,21 +1254,21 @@ class LeggedRobot(BaseTask):
         left_hip_yaw_dof = self.dof_pos[:, self.left_hip_yaw_joint_indices]
         right_hip_yaw_dof = self.dof_pos[:, self.right_hip_yaw_joint_indices]
         abs_sum_hip_yaw_dof = torch.abs(left_hip_yaw_dof + right_hip_yaw_dof)
-        reward = (abs_sum_hip_yaw_dof > 2 * self.cfg.constraints.hip_yaw_deviation_off_center_threshold) | ((left_hip_yaw_dof < -self.cfg.constraints.hip_yaw_deviation_inside_threshold) & (right_hip_yaw_dof > self.cfg.constraints.hip_yaw_deviation_inside_threshold))
+        reward = (abs_sum_hip_yaw_dof > self.cfg.constraints.hip_yaw_deviation_off_center_threshold) | ((left_hip_yaw_dof < -self.cfg.constraints.hip_yaw_deviation_inside_threshold) & (right_hip_yaw_dof > self.cfg.constraints.hip_yaw_deviation_inside_threshold))
         return reward.float().squeeze(1)
 
     def _reward_hip_roll_deviation(self):
         left_hip_roll_dof = self.dof_pos[:, self.left_hip_roll_joint_indices]
         right_hip_roll_dof = self.dof_pos[:, self.right_hip_roll_joint_indices]
         abs_sum_hip_roll_dof = torch.abs(left_hip_roll_dof + right_hip_roll_dof)
-        reward = (abs_sum_hip_roll_dof > 2 * self.cfg.constraints.hip_roll_deviation_off_center_threshold) | ((left_hip_roll_dof > self.cfg.constraints.hip_roll_deviation_inside_threshold) & (right_hip_roll_dof < -self.cfg.constraints.hip_roll_deviation_inside_threshold))
+        reward = (abs_sum_hip_roll_dof > self.cfg.constraints.hip_roll_deviation_off_center_threshold) | ((left_hip_roll_dof > self.cfg.constraints.hip_roll_deviation_inside_threshold) & (right_hip_roll_dof < -self.cfg.constraints.hip_roll_deviation_inside_threshold))
         return reward.float().squeeze(1)
 
     def _reward_ankle_roll_deviation(self):
         left_ankle_roll_dof = self.dof_pos[:, self.left_ankle_roll_joint_indices]
         right_ankle_roll_dof = self.dof_pos[:, self.right_ankle_roll_joint_indices]
         abs_sum_ankle_roll_dof = torch.abs(left_ankle_roll_dof - right_ankle_roll_dof)  # 注意脚踝反向
-        reward = (abs_sum_ankle_roll_dof > 2 * self.cfg.constraints.ankle_roll_deviation_off_center_threshold) | ((left_ankle_roll_dof > self.cfg.constraints.ankle_roll_deviation_inside_threshold) & (right_ankle_roll_dof > self.cfg.constraints.ankle_roll_deviation_inside_threshold))
+        reward = (abs_sum_ankle_roll_dof > self.cfg.constraints.ankle_roll_deviation_off_center_threshold) | ((left_ankle_roll_dof > self.cfg.constraints.ankle_roll_deviation_inside_threshold) & (right_ankle_roll_dof > self.cfg.constraints.ankle_roll_deviation_inside_threshold))
         return reward.float().squeeze(1)
 
     def _reward_no_head_contact(self):
@@ -1411,7 +1412,7 @@ class LeggedRobot(BaseTask):
         thigh_orientation = torch.mean(torch.concat([left_thigh_orientation, right_thigh_orientation], dim=-1), dim=-1)  # [num_envs]
         # 仅在 phase1 之前生效
         before_phase1 = self.root_states[:, 2] < self.cfg.rewards.target_base_height_phase1
-        reward = tolerance(thigh_orientation, [self.cfg.constraints.before1_thigh_ori_threshold, np.inf], 1, 0.1) * before_phase1  # [num_envs]
+        reward = tolerance(thigh_orientation, [self.cfg.constraints.before1_thigh_ori_threshold, np.inf], self.cfg.constraints.before1_thigh_ori_threshold, 0.1) * before_phase1  # [num_envs]
         return reward
 
     def _reward_before1_shank_ori(self):
@@ -1429,7 +1430,7 @@ class LeggedRobot(BaseTask):
         shank_orientation = torch.mean(torch.concat([left_shank_orientation, right_shank_orientation], dim=-1), dim=-1)  # [num_envs]
         # 仅在 phase1 之前生效
         before_phase1 = self.root_states[:, 2] < self.cfg.rewards.target_base_height_phase1
-        reward = tolerance(shank_orientation, [self.cfg.constraints.before1_shank_ori_threshold, np.inf], 1, 0.1) * before_phase1  # [num_envs]
+        reward = tolerance(shank_orientation, [self.cfg.constraints.before1_shank_ori_threshold, np.inf], self.cfg.constraints.before1_shank_ori_threshold, 0.1) * before_phase1  # [num_envs]
         return reward
 
     # ---------- after1
@@ -1469,7 +1470,7 @@ class LeggedRobot(BaseTask):
         shank_orientation = torch.mean(torch.concat([left_shank_orientation, right_shank_orientation], dim=-1), dim=-1)  # [num_envs]
         # 阶段条件
         after_phase1 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase1
-        reward = tolerance(shank_orientation, [self.cfg.constraints.after1_shank_ori_threshold, np.inf], 1, 0.1) * after_phase1  # [num_envs]
+        reward = tolerance(shank_orientation, [self.cfg.constraints.after1_shank_ori_threshold, np.inf], self.cfg.constraints.after1_shank_ori_threshold, 0.1) * after_phase1  # [num_envs]
         return reward
 
     # ---------- after1_before2
@@ -1551,7 +1552,7 @@ class LeggedRobot(BaseTask):
         return reward * after_phase2
 
     def _reward_after2_leg_ori(self):
-        # 获取大腿和膝盖的位置
+        # 获取髋和脚的位置
         left_hip_pos = self.rigid_body_states[:, self.left_hip_yaw_indices, :3].clone()  # [num_envs, 1, 3]
         right_hip_pos = self.rigid_body_states[:, self.right_hip_yaw_indices, :3].clone()  # [num_envs, 1, 3]
         left_foot_pos = self.rigid_body_states[:, self.left_foot_indices, :3].clone()  # [num_envs, 1, 3]
@@ -1565,18 +1566,14 @@ class LeggedRobot(BaseTask):
         leg_orientation = torch.mean(torch.concat([left_leg_orientation, right_leg_orientation], dim=-1), dim=-1)[0]  # [num_envs]
         # 仅在 phase2 之后生效
         after_phase2 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase2
-        reward = tolerance(leg_orientation, [self.cfg.constraints.after2_leg_ori_threshold, np.inf], 1, 0.1) * after_phase2
-        # 3阶段后奖励恒为1【post_task控制】
-        if self.cfg.constraints.post_task:
-            standup = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase3
-            reward = reward * ~standup + torch.ones_like(reward) * standup
+        reward = tolerance(leg_orientation, [self.cfg.constraints.after2_leg_ori_threshold, np.inf], self.cfg.constraints.after2_leg_ori_threshold, 0.1) * after_phase2
         return reward
 
     def _reward_after2_feet_distance(self):
         left_foot_pos = self.rigid_body_states[:, self.left_foot_indices, :3].clone()
         right_foot_pos = self.rigid_body_states[:, self.right_foot_indices, :3].clone()
         feet_distance = torch.norm(left_foot_pos - right_foot_pos, dim=-1)
-        reward = tolerance(feet_distance, [0, self.cfg.constraints.after2_feet_distance_threshold], 0.38, 0.05).squeeze(1)
+        reward = tolerance(feet_distance, [0, self.cfg.constraints.after2_feet_distance_threshold], self.cfg.constraints.after2_feet_distance_threshold, 0.1).squeeze(1)
         # 仅在 phase2 之后生效
         after_phase2 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase2
         reward = reward * after_phase2
