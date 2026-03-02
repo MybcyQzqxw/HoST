@@ -1366,6 +1366,18 @@ class LeggedRobot(BaseTask):
 
     # ---------- before1
 
+    def _reward_before1_prone_orientation(self):
+        before_phase1 = self.root_states[:, 2] < self.cfg.rewards.target_base_height_phase1  # [num_envs]
+        g_x = self.projected_gravity[:, 0]  # [num_envs]，俯卧时 ≈ +1
+        reward = tolerance(g_x, [self.cfg.constraints.before1_prone_orientation_threshold, np.inf], self.cfg.constraints.before1_prone_orientation_threshold, 0.1) * before_phase1  # [num_envs]
+        return reward
+
+    def _reward_before1_no_supine(self):
+        before_phase1 = self.root_states[:, 2] < self.cfg.rewards.target_base_height_phase1  # [num_envs]
+        g_x = self.projected_gravity[:, 0]  # [num_envs]，仰卧时 ≈ -1
+        is_supine = (g_x < -self.cfg.constraints.before1_no_supine_threshold).float() * before_phase1  # [num_envs]
+        return is_supine
+
     def _reward_before1_forearm_contact(self):
         # contact_forces: [num_envs, num_bodies, 3]
         # left_forearm_indices: [1], right_forearm_indices: [1]
