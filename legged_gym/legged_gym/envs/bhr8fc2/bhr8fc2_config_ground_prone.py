@@ -299,7 +299,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             style_before1_forearm_contact = 30
             style_before1_knee_contact = 15
             style_before1_foot_contact = 5
-            style_before1_shank_ori = 0
+            style_before1_shank_ori = 5
             # ---------- after1
             style_after1_no_torso_above_head = -15
             style_after1_no_torso_below_leg = -15
