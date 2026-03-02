@@ -188,18 +188,18 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         only_positive_rewards = False  # 是否只计算正奖励
         reward_groups = ['task', 'regu', 'style', 'target']
         num_reward_groups = len(reward_groups)
-        reward_group_weights = [10.0, 0.05, 1, 1]  # 【调整】大幅增加task权重，降低regu权重
+        reward_group_weights = [20, 0.05, 1, 2]
 
-        target_base_height = 0.85  # 【调整】目标质心高度
-        target_base_height_phase1 = 0.35
+        target_base_height_phase1 = 0.30
         target_base_height_phase2 = 0.50
         target_base_height_phase3 = 0.85
 
         # task reward
+        target_base_height = 0.85
         orientation_threshold = 0.99
 
         class scales:
-            task_base_height = 2.0  # 【调整】增大base_height奖励
+            task_base_height = 5
             task_orientation = 1
 
     class constraints(LeggedRobotCfg.rewards):
@@ -234,12 +234,13 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         ankle_roll_deviation_off_center_threshold = math.radians(ankle_roll_deviation_off_center_threshold)
         ankle_roll_deviation_inside_threshold = math.radians(ankle_roll_deviation_inside_threshold)
 
+        thigh_ori_threshold = 0.8
+
         # ----- phase related
         # ---------- before1
-        before1_thigh_ori_threshold = 0.7
         before1_shank_ori_threshold = 0.8
         # ---------- after1
-        after1_shank_ori_threshold = 0.7
+        after1_shank_ori_threshold = 0.8
         # ---------- before2
         before2_base_ang_vel_x_sigma = -2
         before2_base_lin_vel_y_sigma = -5
@@ -263,36 +264,38 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         class scales:
             # regularization reward
             regu_dof_acc = -2.5e-7
-            regu_dof_vel = -5e-4  # 【调整】降低速度惩罚
-            regu_action_rate = -0.005  # 【调整】降低动作变化惩罚
-            regu_smoothness = -0.001  # 【调整】大幅降低平滑性惩罚
+            regu_dof_vel = -5e-4
+            regu_action_rate = -0.005
+            regu_smoothness = -0.001
             regu_torques = -2.5e-6
             regu_joint_power = -2.5e-5
-            regu_dof_pos_limits = -10.0  # 【调整】大幅降低关节限位惩罚
-            regu_dof_vel_limits = -0.5  # 【调整】降低速度限位惩罚
-            regu_torque_limits = -0.01  # 【调整】降低力矩限位惩罚
+            regu_dof_pos_limits = -10.0
+            regu_dof_vel_limits = -0.5
+            regu_torque_limits = -0.01
 
             # style reward
-            style_shoulder_roll_deviation = -2.5  # 【调整】降低姿态偏差惩罚
+            style_shoulder_roll_deviation = -2.5
             style_shoulder_yaw_deviation = -2.5
             style_waist_deviation = 0  # BHR8FC2没有腰部关节，禁用
             style_hip_yaw_deviation = -2.5
             style_hip_roll_deviation = -2.5
             style_ankle_roll_deviation = -2.5
-            style_no_head_contact = -10  # 【调整】降低接触惩罚
-            style_no_shoulder_contact = -2.5
-            style_no_torso_contact = -2.5
-            style_no_hip_contact = -5.0  # 【调整】降低臀部接触惩罚
-            style_forearm_knee_contact_mismatch = -5
+
+            style_no_head_contact = -10
+            style_no_shoulder_contact = -10
+            style_no_bigarm_contact = -2.5
+            style_no_torso_contact = -10
+            style_no_hip_contact = -10
+            style_no_thigh_contact = -2.5
             style_tripod_contact = -5
             style_lower_body_contact = -5
+            style_thigh_ori = 5
             # ----- phase related
             # ---------- before1
-            style_before1_forearm_contact = 10
-            style_before1_knee_contact = 10
-            style_before1_foot_contact = 10
-            style_before1_thigh_ori = 5
-            style_before1_shank_ori = 5
+            style_before1_forearm_contact = 5
+            style_before1_knee_contact = 15
+            style_before1_foot_contact = 5
+            style_before1_shank_ori = 0
             # ---------- after1
             style_after1_no_torso_above_head = -15
             style_after1_no_torso_below_leg = -15
@@ -303,22 +306,22 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             style_before2_base_ang_vel_x = 5
             style_before2_base_lin_vel_y = 5
             # ---------- after2
-            style_after2_base_ang_vel_xy = 5
-            style_after2_base_lin_vel_xy = 5
+            style_after2_base_ang_vel_xy = 3
+            style_after2_base_lin_vel_xy = 3
             style_after2_upper_body_deviation = 5
             style_after2_lower_body_deviation = 5
-            style_after2_arm_pos = 10
-            style_after2_leg_ori = 10
-            style_after2_feet_distance = 10
-            style_after2_feet_height_var = 10
+            style_after2_arm_pos = 2.5
+            style_after2_leg_ori = 15
+            style_after2_feet_distance = 2.5
+            style_after2_feet_height_var = 2.5
             style_after2_left_foot_displacement = 2.5
             style_after2_right_foot_displacement = 2.5
-            style_after2_no_forearm_contact = -15
-            style_after2_no_knee_contact = -15
-            style_after2_foot_contact = -15
+            style_after2_no_forearm_contact = -20
+            style_after2_no_knee_contact = -20
+            style_after2_foot_contact = -20
 
             # target reward
-            target_target_base_height = 15
+            target_target_base_height = 30
             target_target_orientation = 15
 
     class domain_rand:

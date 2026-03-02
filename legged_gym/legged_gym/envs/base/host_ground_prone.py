@@ -1282,11 +1282,17 @@ class LeggedRobot(BaseTask):
         right_shoulder_pitch_contact = torch.norm(self.contact_forces[:, self.right_shoulder_pitch_indices, :], dim=-1) > 1.0
         left_shoulder_roll_contact = torch.norm(self.contact_forces[:, self.left_shoulder_roll_indices, :], dim=-1) > 1.0
         right_shoulder_roll_contact = torch.norm(self.contact_forces[:, self.right_shoulder_roll_indices, :], dim=-1) > 1.0
+        any_shoulder_contact = (
+            torch.any(left_shoulder_pitch_contact, dim=1) | torch.any(right_shoulder_pitch_contact, dim=1) | torch.any(left_shoulder_roll_contact, dim=1) | torch.any(right_shoulder_roll_contact, dim=1))  # [num_envs]
+        reward = any_shoulder_contact.float()
+        return reward
+
+    def _reward_no_bigarm_contact(self):
         left_shoulder_yaw_contact = torch.norm(self.contact_forces[:, self.left_shoulder_yaw_indices, :], dim=-1) > 1.0
         right_shoulder_yaw_contact = torch.norm(self.contact_forces[:, self.right_shoulder_yaw_indices, :], dim=-1) > 1.0
-        any_shoulder_contact = (
-            torch.any(left_shoulder_pitch_contact, dim=1) | torch.any(right_shoulder_pitch_contact, dim=1) | torch.any(left_shoulder_roll_contact, dim=1) | torch.any(right_shoulder_roll_contact, dim=1) | torch.any(left_shoulder_yaw_contact, dim=1) | torch.any(right_shoulder_yaw_contact, dim=1))  # [num_envs]
-        reward = any_shoulder_contact.float()
+        any_bigarm_contact = (
+            torch.any(left_shoulder_yaw_contact, dim=1) | torch.any(right_shoulder_yaw_contact, dim=1))  # [num_envs]
+        reward = any_bigarm_contact.float()
         return reward
 
     def _reward_no_torso_contact(self):
@@ -1305,26 +1311,12 @@ class LeggedRobot(BaseTask):
         reward = any_hip_contact.float()
         return reward
 
-    def _reward_forearm_knee_contact_mismatch(self):
-        # 惩罚小臂和膝盖接触状态不匹配：
-        # 1. 两条小臂都没接触但至少一个膝盖有接触
-        # 2. 至少一条小臂有接触但两个膝盖都没接触
-        # 检测小臂接触
-        left_forearm_contact = (torch.norm(self.contact_forces[:, self.left_elbow_indices, :], dim=-1) > 1.0).squeeze(1)  # [num_envs]
-        right_forearm_contact = (torch.norm(self.contact_forces[:, self.right_elbow_indices, :], dim=-1) > 1.0).squeeze(1)  # [num_envs]
-        # 检测膝盖接触
-        left_knee_contact = (torch.norm(self.contact_forces[:, self.left_knee_indices, :], dim=-1) > 1.0).squeeze(1)  # [num_envs]
-        right_knee_contact = (torch.norm(self.contact_forces[:, self.right_knee_indices, :], dim=-1) > 1.0).squeeze(1)  # [num_envs]
-        # 情况1：两条小臂都没有接触 AND 至少一个膝盖有接触
-        no_forearm_contact = ~(left_forearm_contact | right_forearm_contact)  # [num_envs]
-        any_knee_contact = left_knee_contact | right_knee_contact  # [num_envs]
-        case1 = no_forearm_contact & any_knee_contact  # [num_envs]
-        # 情况2：至少一条小臂有接触 AND 两个膝盖都没有接触
-        any_forearm_contact = left_forearm_contact | right_forearm_contact  # [num_envs]
-        no_knee_contact = ~(left_knee_contact | right_knee_contact)  # [num_envs]
-        case2 = any_forearm_contact & no_knee_contact  # [num_envs]
-        # 任一情况满足则惩罚
-        reward = (case1 | case2).float()  # [num_envs]
+    def _reward_no_thigh_contact(self):
+        left_thigh_contact = torch.norm(self.contact_forces[:, self.left_thigh_indices, :], dim=-1) > 1.0
+        right_thigh_contact = torch.norm(self.contact_forces[:, self.right_thigh_indices, :], dim=-1) > 1.0
+        any_thigh_contact = (
+            torch.any(left_thigh_contact, dim=1) | torch.any(right_thigh_contact, dim=1))  # [num_envs]
+        reward = any_thigh_contact.float()
         return reward
 
     def _reward_tripod_contact(self):
@@ -1352,6 +1344,22 @@ class LeggedRobot(BaseTask):
         total_contacts = (torch.sum(left_knee_contact.float(), dim=1) + torch.sum(right_knee_contact.float(), dim=1) + torch.sum(left_foot_contact.float(), dim=1) + torch.sum(right_foot_contact.float(), dim=1))  # [num_envs]
         # 接触数小于2则惩罚（返回1），否则0
         reward = (total_contacts < 2).float()
+        return reward
+
+    def _reward_thigh_ori(self):
+        # 获取髋和膝盖的位置
+        left_hip_pos = self.rigid_body_states[:, self.left_thigh_indices, :3].clone()  # [num_envs, 1, 3]
+        right_hip_pos = self.rigid_body_states[:, self.right_thigh_indices, :3].clone()  # [num_envs, 1, 3]
+        left_knee_pos = self.rigid_body_states[:, self.left_knee_indices, :3].clone()  # [num_envs, 1, 3]
+        right_knee_pos = self.rigid_body_states[:, self.right_knee_indices, :3].clone()  # [num_envs, 1, 3]
+        # 计算大腿向量中Z分量的比例（Z分量/向量长度）
+        left_thigh_vec = left_hip_pos - left_knee_pos  # [num_envs, 1, 3]
+        right_thigh_vec = right_hip_pos - right_knee_pos  # [num_envs, 1, 3]
+        left_thigh_orientation = left_thigh_vec[:, :, 2] / torch.norm(left_thigh_vec, dim=-1)  # [num_envs, 1]
+        right_thigh_orientation = right_thigh_vec[:, :, 2] / torch.norm(right_thigh_vec, dim=-1)  # [num_envs, 1]
+        # 左右取平均
+        thigh_orientation = torch.mean(torch.concat([left_thigh_orientation, right_thigh_orientation], dim=-1), dim=-1)  # [num_envs]
+        reward = tolerance(thigh_orientation, [self.cfg.constraints.thigh_ori_threshold, np.inf], self.cfg.constraints.thigh_ori_threshold, 0.1)  # [num_envs]
         return reward
 
     # ----- phase related
@@ -1395,24 +1403,6 @@ class LeggedRobot(BaseTask):
         # 仅在 phase1 之前生效
         before_phase1 = self.root_states[:, 2] < self.cfg.rewards.target_base_height_phase1  # [num_envs]
         reward = both_contact * before_phase1  # [num_envs]
-        return reward
-
-    def _reward_before1_thigh_ori(self):
-        # 获取髋和膝盖的位置
-        left_hip_pos = self.rigid_body_states[:, self.left_hip_yaw_indices, :3].clone()  # [num_envs, 1, 3]
-        right_hip_pos = self.rigid_body_states[:, self.right_hip_yaw_indices, :3].clone()  # [num_envs, 1, 3]
-        left_knee_pos = self.rigid_body_states[:, self.left_knee_indices, :3].clone()  # [num_envs, 1, 3]
-        right_knee_pos = self.rigid_body_states[:, self.right_knee_indices, :3].clone()  # [num_envs, 1, 3]
-        # 计算大腿向量中Z分量的比例（Z分量/向量长度）
-        left_thigh_vec = left_hip_pos - left_knee_pos  # [num_envs, 1, 3]
-        right_thigh_vec = right_hip_pos - right_knee_pos  # [num_envs, 1, 3]
-        left_thigh_orientation = left_thigh_vec[:, :, 2] / torch.norm(left_thigh_vec, dim=-1)  # [num_envs, 1]
-        right_thigh_orientation = right_thigh_vec[:, :, 2] / torch.norm(right_thigh_vec, dim=-1)  # [num_envs, 1]
-        # 左右取平均
-        thigh_orientation = torch.mean(torch.concat([left_thigh_orientation, right_thigh_orientation], dim=-1), dim=-1)  # [num_envs]
-        # 仅在 phase1 之前生效
-        before_phase1 = self.root_states[:, 2] < self.cfg.rewards.target_base_height_phase1
-        reward = tolerance(thigh_orientation, [self.cfg.constraints.before1_thigh_ori_threshold, np.inf], self.cfg.constraints.before1_thigh_ori_threshold, 0.1) * before_phase1  # [num_envs]
         return reward
 
     def _reward_before1_shank_ori(self):
