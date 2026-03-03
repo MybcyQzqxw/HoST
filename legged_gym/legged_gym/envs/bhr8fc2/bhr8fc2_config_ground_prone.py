@@ -267,8 +267,8 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             # regularization reward
             regu_dof_acc = -2.5e-7
             regu_dof_vel = -5e-4
-            regu_action_rate = -0.025
-            regu_smoothness = -0.01
+            regu_action_rate = -0.003
+            regu_smoothness = -0.001
             regu_torques = -2.5e-6
             regu_joint_power = -5e-5
             regu_dof_pos_limits = -0.5
@@ -296,7 +296,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             # ---------- before1
             style_before1_prone_orientation = 15
             style_before1_no_supine = -30
-            style_before1_forearm_contact = 100
+            style_before1_forearm_contact = 25
             style_before1_knee_contact = 15
             style_before1_foot_contact = 15
             style_before1_shank_ori = 15
@@ -305,7 +305,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             style_after1_no_torso_below_leg = -5
             style_after1_shank_ori = 2.5
             # ---------- after1_before2
-            style_after1_before2_base_ang_vel_y = 0
+            style_after1_before2_base_ang_vel_y = 10
             # ---------- before2
             style_before2_base_ang_vel_x = 2.5
             style_before2_base_lin_vel_y = 2.5
@@ -325,8 +325,8 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             style_after2_foot_contact = -20
 
             # target reward
-            target_target_base_height = 150
-            target_target_orientation = 30
+            target_target_base_height = 50
+            target_target_orientation = 20
 
     class domain_rand:
         use_random = True
@@ -377,11 +377,11 @@ class BHR8FC2Cfg(LeggedRobotCfg):
     class curriculum:
         # 施加向上拉力
         pull_force = True
-        force = 360
+        force = 400
         no_orientation = True  # 所有姿态都施加力
 
         # 增加难度的基座高度阈值
-        threshold_base_height = 0.65
+        threshold_base_height = 0.70
 
     class limitation:
         # 关节和基座速度限制
