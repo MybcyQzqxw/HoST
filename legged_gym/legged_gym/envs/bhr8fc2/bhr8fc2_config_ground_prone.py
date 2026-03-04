@@ -280,12 +280,12 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             regu_torque_limits = 0
 
             # style reward
-            style_shoulder_roll_deviation = -10
-            style_shoulder_yaw_deviation = -10
+            style_shoulder_roll_deviation = -2.5
+            style_shoulder_yaw_deviation = -2.5
             style_waist_deviation = 0  # BHR8FC2没有腰部关节，禁用
-            style_hip_yaw_deviation = -10
-            style_hip_roll_deviation = -10
-            style_ankle_roll_deviation = -10
+            style_hip_yaw_deviation = -2.5
+            style_hip_roll_deviation = -2.5
+            style_ankle_roll_deviation = -2.5
 
             style_no_head_contact = 0
             style_no_shoulder_contact = 0
