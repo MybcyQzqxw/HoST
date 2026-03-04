@@ -188,7 +188,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         only_positive_rewards = False  # 是否只计算正奖励
         reward_groups = ['task', 'regu', 'style', 'target']
         num_reward_groups = len(reward_groups)
-        reward_group_weights = [1, 0.1, 1, 1]
+        reward_group_weights = [1, 0.01, 1, 1]
 
         target_base_height_phase1 = 0.45
         target_base_height_phase2 = 0.65
@@ -271,11 +271,11 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             # regularization reward
             regu_dof_acc = -2.5e-7
             regu_dof_vel = -1e-3
-            regu_action_rate = -0.01
-            regu_smoothness = -0.01
-            regu_torques = -2.5e-6
-            regu_joint_power = -2.5e-5
-            regu_dof_pos_limits = -100
+            regu_action_rate = -1e-5
+            regu_smoothness = -5e-6
+            regu_torques = -1e-5
+            regu_joint_power = -5e-5
+            regu_dof_pos_limits = -10
             regu_dof_vel_limits = -1
             regu_torque_limits = 0
 
