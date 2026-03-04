@@ -48,8 +48,8 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             'right_shoulder_roll_joint': 0.0,
             'left_shoulder_yaw_joint': 0.0,
             'right_shoulder_yaw_joint': 0.0,
-            'left_elbow_joint': -0.8,
-            'right_elbow_joint': 0.8,
+            'left_elbow_joint': -0.6,
+            'right_elbow_joint': 0.6,
         }
 
     class env(LeggedRobotCfg.env):
@@ -188,18 +188,19 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         only_positive_rewards = False  # 是否只计算正奖励
         reward_groups = ['task', 'regu', 'style', 'target']
         num_reward_groups = len(reward_groups)
-        reward_group_weights = [2, 0.03, 1, 2]
+        reward_group_weights = [1, 0.1, 1, 1]
 
-        target_base_height_phase1 = 0.35
-        target_base_height_phase2 = 0.55
-        target_base_height_phase3 = 0.85
+        target_base_height_phase1 = 0.45
+        target_base_height_phase2 = 0.65
 
         # task reward
-        target_base_height = 0.85
+        target_base_height = 0.80
+        target_head_height = 1.30
         orientation_threshold = 0.99
 
         class scales:
-            task_base_height = 1
+            # task_base_height = 1
+            task_head_height = 1
             task_orientation = 1
 
     class constraints(LeggedRobotCfg.rewards):
@@ -207,19 +208,19 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         only_positive_rewards = False  # 是否只计算正奖励
 
         # style reward (单位: 角度)
-        # off_center  0.8 * 总值
-        # inside      0.8 * 内值
-        shoulder_roll_deviation_off_center_threshold = 50
-        shoulder_roll_deviation_inside_threshold = 5
-        shoulder_yaw_deviation_off_center_threshold = 108
-        shoulder_yaw_deviation_inside_threshold = 36
+        # off_center  a * 总值
+        # inside      a * 内值
+        shoulder_roll_deviation_off_center_threshold = 40
+        shoulder_roll_deviation_inside_threshold = 4
+        shoulder_yaw_deviation_off_center_threshold = 54
+        shoulder_yaw_deviation_inside_threshold = 18
         waist_deviation_threshold = 80
-        hip_yaw_deviation_off_center_threshold = 32
-        hip_yaw_deviation_inside_threshold = 16
-        hip_roll_deviation_off_center_threshold = 48
-        hip_roll_deviation_inside_threshold = 24
-        ankle_roll_deviation_off_center_threshold = 32
-        ankle_roll_deviation_inside_threshold = 16
+        hip_yaw_deviation_off_center_threshold = 16
+        hip_yaw_deviation_inside_threshold = 8
+        hip_roll_deviation_off_center_threshold = 24
+        hip_roll_deviation_inside_threshold = 12
+        ankle_roll_deviation_off_center_threshold = 16
+        ankle_roll_deviation_inside_threshold = 8
 
         import math
         shoulder_roll_deviation_off_center_threshold = math.radians(shoulder_roll_deviation_off_center_threshold)
@@ -234,14 +235,17 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         ankle_roll_deviation_off_center_threshold = math.radians(ankle_roll_deviation_off_center_threshold)
         ankle_roll_deviation_inside_threshold = math.radians(ankle_roll_deviation_inside_threshold)
 
-        thigh_ori_threshold = 0.8
+        no_supine_threshold = 0.3
+        feet_distance_threshold = 0.9
+        lower_body_deviation_sigma = -2
 
         # ----- phase related
         # ---------- before1
         before1_prone_orientation_threshold = 0.7
-        before1_no_supine_threshold = 0.3
         before1_shank_ori_threshold = 0.8
         # ---------- after1
+        style_after1_ang_vel_xy_sigma = -2
+        after1_thigh_ori_threshold = 0.8
         after1_shank_ori_threshold = 0.8
         # ---------- before2
         before2_base_ang_vel_x_sigma = -2
@@ -252,9 +256,9 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         after2_base_lin_vel_xy_sigma = -5
         after2_upper_body_deviation_sigma = -2
         after2_lower_body_deviation_sigma = -2
-        after2_arm_pos_sigma = -2
-        after2_leg_ori_threshold = 0.9
-        after2_feet_distance_threshold = 0.3
+        after2_arm_pos_sigma = -0.1
+        after2_leg_ori_threshold = 0.8
+        after2_feet_distance_threshold = 0.4
         after2_feet_height_var_sigma = -2
         after2_left_foot_displacement_sigma = -2
         after2_right_foot_displacement_sigma = -2
@@ -266,67 +270,70 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         class scales:
             # regularization reward
             regu_dof_acc = -2.5e-7
-            regu_dof_vel = -5e-4
-            regu_action_rate = -0.003
-            regu_smoothness = -0.001
+            regu_dof_vel = -1e-3
+            regu_action_rate = -0.01
+            regu_smoothness = -0.01
             regu_torques = -2.5e-6
-            regu_joint_power = -5e-5
-            regu_dof_pos_limits = -0.5
-            regu_dof_vel_limits = -0.5
-            regu_torque_limits = -0.01
+            regu_joint_power = -2.5e-5
+            regu_dof_pos_limits = -100
+            regu_dof_vel_limits = -1
+            regu_torque_limits = 0
 
             # style reward
-            style_shoulder_roll_deviation = -2.5
-            style_shoulder_yaw_deviation = -2.5
+            style_shoulder_roll_deviation = -10
+            style_shoulder_yaw_deviation = -10
             style_waist_deviation = 0  # BHR8FC2没有腰部关节，禁用
-            style_hip_yaw_deviation = -2.5
-            style_hip_roll_deviation = -2.5
-            style_ankle_roll_deviation = -2.5
+            style_hip_yaw_deviation = -10
+            style_hip_roll_deviation = -10
+            style_ankle_roll_deviation = -10
 
-            style_no_head_contact = -20
-            style_no_shoulder_contact = -1
-            style_no_bigarm_contact = -1
-            style_no_torso_contact = -5
-            style_no_hip_contact = -0.5
-            style_no_thigh_contact = -0.5
-            style_tripod_contact = -15
-            style_lower_body_contact = -15
-            style_thigh_ori = 2.5
+            style_no_head_contact = 0
+            style_no_shoulder_contact = 0
+            style_no_bigarm_contact = 0
+            style_no_torso_contact = 0
+            style_no_hip_contact = 0
+            style_no_thigh_contact = 0
+            style_no_supine = 0
+            style_tripod_contact = 0
+            style_lower_body_contact = 0
+            style_feet_distance = -10
+            style_lower_body_deviation = 10
             # ----- phase related
             # ---------- before1
-            style_before1_prone_orientation = 15
-            style_before1_no_supine = -30
-            style_before1_forearm_contact = 25
-            style_before1_knee_contact = 15
-            style_before1_foot_contact = 15
-            style_before1_shank_ori = 15
+            style_before1_prone_orientation = 0
+            style_before1_forearm_contact = 0
+            style_before1_knee_contact = 0
+            style_before1_foot_contact = 0
+            style_before1_shank_ori = 0
             # ---------- after1
-            style_after1_no_torso_above_head = -15
-            style_after1_no_torso_below_leg = -5
-            style_after1_shank_ori = 2.5
+            style_style_after1_ang_vel_xy = 25
+            style_after1_no_torso_above_head = 0
+            style_after1_no_torso_below_leg = 0
+            style_after1_thigh_ori = 10
+            style_after1_shank_ori = 0
             # ---------- after1_before2
-            style_after1_before2_base_ang_vel_y = 10
+            style_after1_before2_base_ang_vel_y = 0
             # ---------- before2
-            style_before2_base_ang_vel_x = 2.5
-            style_before2_base_lin_vel_y = 2.5
+            style_before2_base_ang_vel_x = 0
+            style_before2_base_lin_vel_y = 0
             # ---------- after2
             style_after2_base_ang_vel_xy = 10
             style_after2_base_lin_vel_xy = 10
-            style_after2_upper_body_deviation = 20
-            style_after2_lower_body_deviation = 20
-            style_after2_arm_pos = 20
-            style_after2_leg_ori = 20
-            style_after2_feet_distance = 10
-            style_after2_feet_height_var = 10
-            style_after2_left_foot_displacement = 10
-            style_after2_right_foot_displacement = 10
-            style_after2_no_forearm_contact = -20
-            style_after2_no_knee_contact = -20
-            style_after2_foot_contact = -20
+            style_after2_upper_body_deviation = 0
+            style_after2_lower_body_deviation = 0
+            style_after2_arm_pos = 10
+            style_after2_leg_ori = 0
+            style_after2_feet_distance = 0
+            style_after2_feet_height_var = 2.5
+            style_after2_left_foot_displacement = 2.5
+            style_after2_right_foot_displacement = 2.5
+            style_after2_no_forearm_contact = 0
+            style_after2_no_knee_contact = 0
+            style_after2_foot_contact = 0
 
             # target reward
-            target_target_base_height = 50
-            target_target_orientation = 20
+            target_target_base_height = 10
+            target_target_orientation = 10
 
     class domain_rand:
         use_random = True
@@ -377,11 +384,12 @@ class BHR8FC2Cfg(LeggedRobotCfg):
     class curriculum:
         # 施加向上拉力
         pull_force = True
-        force = 400
+        force = 300
         no_orientation = True  # 所有姿态都施加力
 
-        # 增加难度的基座高度阈值
+        # 增加难度的高度阈值
         threshold_base_height = 0.70
+        threshold_head_height = 1.20
 
     class limitation:
         # 关节和基座速度限制
