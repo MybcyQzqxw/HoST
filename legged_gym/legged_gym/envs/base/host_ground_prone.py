@@ -1324,7 +1324,7 @@ class LeggedRobot(BaseTask):
 
     def _reward_no_supine(self):
         g_x = self.projected_gravity[:, 0]  # [num_envs]，仰卧时 ≈ -1
-        is_supine = (g_x < -self.cfg.constraints.no_supine_threshold).float()  # [num_envs]
+        is_supine = (g_x < self.cfg.constraints.no_supine_threshold).float()  # [num_envs]
         return is_supine
 
     def _reward_tripod_contact(self):
@@ -1360,15 +1360,30 @@ class LeggedRobot(BaseTask):
         feet_distance = torch.norm(left_foot_pos - right_foot_pos, dim=-1)
         return (feet_distance > self.cfg.constraints.feet_distance_threshold).squeeze(1)
 
-    def _reward_lower_body_deviation(self):
-        lower_body_dof_left = torch.cat([self.left_hip_yaw_joint_indices, self.left_hip_roll_joint_indices, self.left_hip_pitch_joint_indices, self.left_knee_joint_indices])
-        lower_body_dof_right = torch.cat([self.right_hip_yaw_joint_indices, self.right_hip_roll_joint_indices, self.right_hip_pitch_joint_indices, self.right_knee_joint_indices])
-        left_dof_pos = self.dof_pos[:, lower_body_dof_left].unsqueeze(1)  # (N, 1, 4)
-        right_dof_pos = self.dof_pos[:, lower_body_dof_right].unsqueeze(1)  # (N, 1, 4)
+    def _reward_upper_body_deviation(self):
+        upper_body_dof_left = torch.cat([self.left_shoulder_pitch_joint_indices, self.left_shoulder_roll_joint_indices, self.left_shoulder_yaw_joint_indices, self.left_elbow_joint_indices])
+        upper_body_dof_right = torch.cat([self.right_shoulder_pitch_joint_indices, self.right_shoulder_roll_joint_indices, self.right_shoulder_yaw_joint_indices, self.right_elbow_joint_indices])
+        left_dof_pos = self.dof_pos[:, upper_body_dof_left].unsqueeze(1)  # (N, 1, 4)
+        right_dof_pos = self.dof_pos[:, upper_body_dof_right].unsqueeze(1)  # (N, 1, 4)
         left_dof_pos[:, :, 0] = -left_dof_pos[:, :, 0]
         left_dof_pos[:, :, 1] = -left_dof_pos[:, :, 1]
         left_dof_pos[:, :, 2] = -left_dof_pos[:, :, 2]
         left_dof_pos[:, :, 3] = -left_dof_pos[:, :, 3]
+        reward = torch.sum(torch.var(torch.cat([left_dof_pos, right_dof_pos], dim=1), dim=1), dim=-1)
+        reward = torch.exp(reward * self.cfg.constraints.upper_body_deviation_sigma)
+        return reward
+
+    def _reward_lower_body_deviation(self):
+        lower_body_dof_left = torch.cat([self.left_hip_yaw_joint_indices, self.left_hip_roll_joint_indices, self.left_hip_pitch_joint_indices, self.left_knee_joint_indices, self.left_ankle_pitch_joint_indices, self.left_ankle_roll_joint_indices])
+        lower_body_dof_right = torch.cat([self.right_hip_yaw_joint_indices, self.right_hip_roll_joint_indices, self.right_hip_pitch_joint_indices, self.right_knee_joint_indices, self.right_ankle_pitch_joint_indices, self.right_ankle_roll_joint_indices])
+        left_dof_pos = self.dof_pos[:, lower_body_dof_left].unsqueeze(1)  # (N, 1, 6)
+        right_dof_pos = self.dof_pos[:, lower_body_dof_right].unsqueeze(1)  # (N, 1, 6)
+        left_dof_pos[:, :, 0] = -left_dof_pos[:, :, 0]
+        left_dof_pos[:, :, 1] = -left_dof_pos[:, :, 1]
+        left_dof_pos[:, :, 2] = -left_dof_pos[:, :, 2]
+        left_dof_pos[:, :, 3] = -left_dof_pos[:, :, 3]
+        left_dof_pos[:, :, 4] = -left_dof_pos[:, :, 4]
+        left_dof_pos[:, :, 5] = left_dof_pos[:, :, 5]  # 脚踝roll不反向
         reward = torch.sum(torch.var(torch.cat([left_dof_pos, right_dof_pos], dim=1), dim=1), dim=-1)
         reward = torch.exp(reward * self.cfg.constraints.lower_body_deviation_sigma)
         return reward
@@ -1422,30 +1437,44 @@ class LeggedRobot(BaseTask):
         reward = both_contact * before_phase1  # [num_envs]
         return reward
 
+    def _reward_before1_thigh_ori(self):
+        # 获取髋和膝盖的位置
+        left_hip_pos = self.rigid_body_states[:, self.left_thigh_indices, :3].clone()  # [num_envs, 1, 3]
+        right_hip_pos = self.rigid_body_states[:, self.right_thigh_indices, :3].clone()  # [num_envs, 1, 3]
+        left_knee_pos = self.rigid_body_states[:, self.left_knee_indices, :3].clone()  # [num_envs, 1, 3]
+        right_knee_pos = self.rigid_body_states[:, self.right_knee_indices, :3].clone()  # [num_envs, 1, 3]
+        # 计算大腿向量中Z分量的比例（Z分量/向量长度）
+        left_thigh_vec = left_hip_pos - left_knee_pos  # [num_envs, 1, 3]
+        right_thigh_vec = right_hip_pos - right_knee_pos  # [num_envs, 1, 3]
+        left_thigh_orientation = left_thigh_vec[:, :, 2] / torch.norm(left_thigh_vec, dim=-1)  # [num_envs, 1]
+        right_thigh_orientation = right_thigh_vec[:, :, 2] / torch.norm(right_thigh_vec, dim=-1)  # [num_envs, 1]
+        # 左右取平均
+        thigh_orientation = torch.mean(torch.concat([left_thigh_orientation, right_thigh_orientation], dim=-1), dim=-1)  # [num_envs]
+        # 阶段条件
+        before_phase1 = self.root_states[:, 2] < self.cfg.rewards.target_base_height_phase1
+        reward = tolerance(thigh_orientation, [self.cfg.constraints.before1_thigh_ori_threshold, np.inf], 1, 0.1) * before_phase1  # [num_envs]
+        return reward
+
     def _reward_before1_shank_ori(self):
         # 获取膝盖和脚的位置
         left_knee_pos = self.rigid_body_states[:, self.left_knee_indices, :3].clone()  # [num_envs, 1, 3]
         right_knee_pos = self.rigid_body_states[:, self.right_knee_indices, :3].clone()  # [num_envs, 1, 3]
         left_foot_pos = self.rigid_body_states[:, self.left_foot_indices, :3].clone()  # [num_envs, 1, 3]
         right_foot_pos = self.rigid_body_states[:, self.right_foot_indices, :3].clone()  # [num_envs, 1, 3]
-        # 计算小腿向量中X分量的比例（X分量/向量长度）
+        # 计算小腿向量中Z分量的比例（Z分量/向量长度）
+        # 俯卧阶段小腿应接近水平，Z分量应很小；超过阈值则给惩罚
         left_shank_vec = left_knee_pos - left_foot_pos  # [num_envs, 1, 3]
         right_shank_vec = right_knee_pos - right_foot_pos  # [num_envs, 1, 3]
-        left_shank_orientation = left_shank_vec[:, :, 0] / torch.norm(left_shank_vec, dim=-1)  # [num_envs, 1]
-        right_shank_orientation = right_shank_vec[:, :, 0] / torch.norm(right_shank_vec, dim=-1)  # [num_envs, 1]
+        left_shank_z = torch.abs(left_shank_vec[:, :, 2]) / torch.norm(left_shank_vec, dim=-1)  # [num_envs, 1]
+        right_shank_z = torch.abs(right_shank_vec[:, :, 2]) / torch.norm(right_shank_vec, dim=-1)  # [num_envs, 1]
         # 左右取平均
-        shank_orientation = torch.mean(torch.concat([left_shank_orientation, right_shank_orientation], dim=-1), dim=-1)  # [num_envs]
-        # 仅在 phase1 之前生效
+        shank_z = torch.mean(torch.concat([left_shank_z, right_shank_z], dim=-1), dim=-1)  # [num_envs]
+        # 超过阈值则返回1（配合负scale产生惩罚），否则返回0
         before_phase1 = self.root_states[:, 2] < self.cfg.rewards.target_base_height_phase1
-        reward = tolerance(shank_orientation, [self.cfg.constraints.before1_shank_ori_threshold, np.inf], self.cfg.constraints.before1_shank_ori_threshold, 0.1) * before_phase1  # [num_envs]
+        reward = (shank_z > self.cfg.constraints.before1_shank_ori_threshold).float() * before_phase1  # [num_envs]
         return reward
 
     # ---------- after1
-
-    def _reward_style_after1_ang_vel_xy(self):
-        # Penalize xy axes base angular velocity
-        after_phase1 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase1
-        return torch.exp(torch.sum(torch.square(self.base_ang_vel[:, :2]), dim=1) * self.cfg.constraints.style_after1_ang_vel_xy_sigma) * after_phase1
 
     def _reward_after1_no_torso_above_head(self):
         base_height = self.root_states[:, 2]  # [num_envs]
@@ -1674,9 +1703,13 @@ class LeggedRobot(BaseTask):
 
     def _reward_target_base_height(self):
         base_height = self.root_states[:, 2]
-        after_phase2 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase2
-        return torch.exp(torch.abs(base_height - self.cfg.rewards.target_base_height) * self.cfg.constraints.target_base_height_sigma) * after_phase2
+        reward = torch.exp(torch.abs(base_height - self.cfg.rewards.target_base_height) * self.cfg.constraints.target_base_height_sigma)
+        # after_phase2 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase2
+        # reward *= after_phase2
+        return reward
 
     def _reward_target_orientation(self):
-        after_phase2 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase2
-        return torch.exp(torch.sum(torch.square(self.projected_gravity[:, :2]), dim=1) * self.cfg.constraints.target_orientation_sigma) * after_phase2
+        reward = torch.exp(torch.sum(torch.square(self.projected_gravity[:, :2]), dim=1) * self.cfg.constraints.target_orientation_sigma)
+        # after_phase2 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase2
+        # reward *= after_phase2
+        return reward
