@@ -188,10 +188,10 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         only_positive_rewards = False  # 是否只计算正奖励
         reward_groups = ['task', 'regu', 'style', 'target']
         num_reward_groups = len(reward_groups)
-        reward_group_weights = [1, 0.01, 1, 1]
+        reward_group_weights = [2, 0.002, 1, 2]
 
         target_base_height_phase1 = 0.35
-        target_base_height_phase2 = 0.65
+        target_base_height_phase2 = 0.55
 
         # task reward
         target_base_height = 0.80
@@ -276,7 +276,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             regu_smoothness = -1e-3
             regu_torques = -1e-5
             regu_joint_power = -1e-4
-            regu_dof_pos_limits = -10
+            regu_dof_pos_limits = -2.5
             regu_dof_vel_limits = -1
             regu_torque_limits = 0
 
@@ -304,12 +304,12 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             # ---------- before1
             style_before1_prone_orientation = 0
             style_before1_forearm_contact = 10
-            style_before1_knee_contact = 10
+            style_before1_knee_contact = 5
             style_before1_foot_contact = 0  # 脚翘起更易起身！！！
             style_before1_thigh_ori = 20
-            style_before1_shank_ori = -20
+            style_before1_shank_ori = -2.5
             # ---------- after1
-            style_after1_no_torso_above_head = -20
+            style_after1_no_torso_above_head = -10
             style_after1_no_torso_below_leg = -20
             style_after1_thigh_ori = 20
             style_after1_shank_ori = 20
