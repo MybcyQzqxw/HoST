@@ -190,7 +190,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         num_reward_groups = len(reward_groups)
         reward_group_weights = [1, 0.01, 1, 1]
 
-        target_base_height_phase1 = 0.45
+        target_base_height_phase1 = 0.35
         target_base_height_phase2 = 0.65
 
         # task reward
@@ -219,8 +219,8 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         hip_yaw_deviation_inside_threshold = 10
         hip_roll_deviation_off_center_threshold = 30
         hip_roll_deviation_inside_threshold = 15
-        ankle_roll_deviation_off_center_threshold = 20
-        ankle_roll_deviation_inside_threshold = 10
+        ankle_roll_deviation_off_center_threshold = 24
+        ankle_roll_deviation_inside_threshold = 12
 
         import math
         shoulder_roll_deviation_off_center_threshold = math.radians(shoulder_roll_deviation_off_center_threshold)
@@ -244,7 +244,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         # ---------- before1
         before1_prone_orientation_threshold = 0.7
         before1_thigh_ori_threshold = 0.8
-        before1_shank_ori_threshold = 0.2
+        before1_shank_ori_threshold = 0.0
         # ---------- after1
         after1_thigh_ori_threshold = 0.8
         after1_shank_ori_threshold = 0.8
@@ -272,8 +272,8 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             # regularization reward
             regu_dof_acc = -2.5e-7
             regu_dof_vel = -1e-3
-            regu_action_rate = -1e-5
-            regu_smoothness = -2.5e-6
+            regu_action_rate = -5e-3
+            regu_smoothness = -1e-3
             regu_torques = -1e-5
             regu_joint_power = -1e-4
             regu_dof_pos_limits = -10
@@ -289,23 +289,23 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             style_ankle_roll_deviation = -2.5
 
             style_no_head_contact = -20
-            style_no_shoulder_contact = -2.5
+            style_no_shoulder_contact = -1
             style_no_bigarm_contact = -1
-            style_no_torso_contact = -2.5
-            style_no_hip_contact = -2.5
-            style_no_thigh_contact = -1
-            style_no_supine = -20
-            style_tripod_contact = -20
-            style_lower_body_contact = -20
+            style_no_torso_contact = -5
+            style_no_hip_contact = -0.5
+            style_no_thigh_contact = -0.5
+            style_no_supine = -2.5
+            style_tripod_contact = -20  # 无效
+            style_lower_body_contact = -20  # 无效
             style_feet_distance = -20
-            style_upper_body_deviation = 2.5
-            style_lower_body_deviation = 2.5
+            style_upper_body_deviation = 5
+            style_lower_body_deviation = 5
             # ----- phase related
             # ---------- before1
             style_before1_prone_orientation = 0
             style_before1_forearm_contact = 10
             style_before1_knee_contact = 10
-            style_before1_foot_contact = 2.5
+            style_before1_foot_contact = 0  # 脚翘起更易起身！！！
             style_before1_thigh_ori = 20
             style_before1_shank_ori = -20
             # ---------- after1
@@ -313,11 +313,12 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             style_after1_no_torso_below_leg = -20
             style_after1_thigh_ori = 20
             style_after1_shank_ori = 20
+            style_after1_foot_contact = -20
             # ---------- after1_before2
             style_after1_before2_base_ang_vel_y = 0
             # ---------- before2
-            style_before2_base_ang_vel_x = 10
-            style_before2_base_lin_vel_y = 10
+            style_before2_base_ang_vel_x = 2.5
+            style_before2_base_lin_vel_y = 2.5
             # ---------- after2
             style_after2_base_ang_vel_xy = 10
             style_after2_base_lin_vel_xy = 10
@@ -331,10 +332,9 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             style_after2_right_foot_displacement = 2.5
             style_after2_no_forearm_contact = -20
             style_after2_no_knee_contact = -20
-            style_after2_foot_contact = -20
 
             # target reward
-            target_target_base_height = 20
+            target_target_base_height = 100
             target_target_orientation = 20
 
     class domain_rand:

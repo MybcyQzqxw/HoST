@@ -1462,7 +1462,6 @@ class LeggedRobot(BaseTask):
         left_foot_pos = self.rigid_body_states[:, self.left_foot_indices, :3].clone()  # [num_envs, 1, 3]
         right_foot_pos = self.rigid_body_states[:, self.right_foot_indices, :3].clone()  # [num_envs, 1, 3]
         # 计算小腿向量中Z分量的比例（Z分量/向量长度）
-        # 俯卧阶段小腿应接近水平，Z分量应很小；超过阈值则给惩罚
         left_shank_vec = left_knee_pos - left_foot_pos  # [num_envs, 1, 3]
         right_shank_vec = right_knee_pos - right_foot_pos  # [num_envs, 1, 3]
         left_shank_z = torch.abs(left_shank_vec[:, :, 2]) / torch.norm(left_shank_vec, dim=-1)  # [num_envs, 1]
@@ -1530,6 +1529,20 @@ class LeggedRobot(BaseTask):
         # 阶段条件
         after_phase1 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase1
         reward = tolerance(shank_orientation, [self.cfg.constraints.after1_shank_ori_threshold, np.inf], self.cfg.constraints.after1_shank_ori_threshold, 0.1) * after_phase1  # [num_envs]
+        return reward
+
+    def _reward_after1_foot_contact(self):
+        # contact_forces: [num_envs, num_bodies, 3]
+        # left_foot_indices: [1], right_foot_indices: [1]
+        # 提取脚接触力并计算范数，squeeze 掉单一维度
+        left_foot_contact = (torch.norm(self.contact_forces[:, self.left_foot_indices, :], dim=-1) > 1.0).squeeze(1)  # [num_envs]
+        right_foot_contact = (torch.norm(self.contact_forces[:, self.right_foot_indices, :], dim=-1) > 1.0).squeeze(1)  # [num_envs]
+        # 两个脚都接触：返回 0（无惩罚），否则返回 1（惩罚）
+        both_contact = (left_foot_contact & right_foot_contact).float()  # [num_envs]
+        # 仅在 phase1 之后生效
+        after_phase1 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase1  # [num_envs]
+        # 双脚没有同时着地时产生惩罚（返回1），双脚都着地时无惩罚（返回0）
+        reward = (1.0 - both_contact) * after_phase1  # [num_envs]
         return reward
 
     # ---------- after1_before2
@@ -1684,20 +1697,6 @@ class LeggedRobot(BaseTask):
         # 仅在 phase2 之后生效
         after_phase2 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase2
         return reward * after_phase2
-
-    def _reward_after2_foot_contact(self):
-        # contact_forces: [num_envs, num_bodies, 3]
-        # left_foot_indices: [1], right_foot_indices: [1]
-        # 提取脚接触力并计算范数，squeeze 掉单一维度
-        left_foot_contact = (torch.norm(self.contact_forces[:, self.left_foot_indices, :], dim=-1) > 1.0).squeeze(1)  # [num_envs]
-        right_foot_contact = (torch.norm(self.contact_forces[:, self.right_foot_indices, :], dim=-1) > 1.0).squeeze(1)  # [num_envs]
-        # 两个脚都接触：返回 0（无惩罚），否则返回 1（惩罚）
-        both_contact = (left_foot_contact & right_foot_contact).float()  # [num_envs]
-        # 仅在 phase2 之后生效
-        after_phase2 = self.root_states[:, 2] > self.cfg.rewards.target_base_height_phase2  # [num_envs]
-        # 双脚没有同时着地时产生惩罚（返回1），双脚都着地时无惩罚（返回0）
-        reward = (1.0 - both_contact) * after_phase2  # [num_envs]
-        return reward
 
     # target reward
 
