@@ -79,11 +79,11 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             'elbow': 150,
         }  # [N*m/rad]
         damping = {
-            'hip': 2.5,
-            'knee': 2.5,
-            'ankle': 2.5,
-            'shoulder': 2.5,
-            'elbow': 2.5,
+            'hip': 4.0,
+            'knee': 6.0,
+            'ankle': 4.0,
+            'shoulder': 4.0,
+            'elbow': 4.0,
         }  # [N*m*s/rad]
         # action scale: target angle = actionRescale * action + cur_dof_pos
         action_scale = 1
@@ -188,10 +188,10 @@ class BHR8FC2Cfg(LeggedRobotCfg):
         only_positive_rewards = False  # 是否只计算正奖励
         reward_groups = ['task', 'regu', 'style', 'target']
         num_reward_groups = len(reward_groups)
-        reward_group_weights = [2, 0.002, 1, 2]
+        reward_group_weights = [2, 0.001, 1, 2]
 
-        target_base_height_phase1 = 0.35
-        target_base_height_phase2 = 0.55
+        target_base_height_phase1 = 0.30
+        target_base_height_phase2 = 0.50
 
         # task reward
         target_base_height = 0.80
@@ -294,7 +294,7 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             style_no_torso_contact = -5
             style_no_hip_contact = -0.5
             style_no_thigh_contact = -0.5
-            style_no_supine = -2.5
+            style_no_supine = -10
             style_tripod_contact = -20  # 无效
             style_lower_body_contact = -20  # 无效
             style_feet_distance = -20
@@ -307,18 +307,18 @@ class BHR8FC2Cfg(LeggedRobotCfg):
             style_before1_knee_contact = 5
             style_before1_foot_contact = 0  # 脚翘起更易起身！！！
             style_before1_thigh_ori = 20
-            style_before1_shank_ori = -2.5
+            style_before1_shank_ori = 0
             # ---------- after1
-            style_after1_no_torso_above_head = -10
+            style_after1_no_torso_above_head = -20
             style_after1_no_torso_below_leg = -20
             style_after1_thigh_ori = 20
             style_after1_shank_ori = 20
             style_after1_foot_contact = -20
             # ---------- after1_before2
-            style_after1_before2_base_ang_vel_y = 0
+            style_after1_before2_base_ang_vel_y = 10
             # ---------- before2
-            style_before2_base_ang_vel_x = 2.5
-            style_before2_base_lin_vel_y = 2.5
+            style_before2_base_ang_vel_x = 0
+            style_before2_base_lin_vel_y = 0
             # ---------- after2
             style_after2_base_ang_vel_xy = 10
             style_after2_base_lin_vel_xy = 10
